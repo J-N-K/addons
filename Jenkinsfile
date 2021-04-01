@@ -1,9 +1,7 @@
 pipeline {
-  /*
   environment {
-       JAVA_TOOL_OPTIONS = '-Duser.home=$HOME'
+       JAVA_TOOL_OPTIONS = '-Duser.home=/jenkins'
   }
-  */
   agent {
     docker {
       image 'maven:3-alpine'
@@ -14,10 +12,8 @@ pipeline {
   stages {
     stage('Build') {
       steps {
-        sh 'pwd'
-        sh 'ls -la /jenkins'
-        sh 'ls -la /*'
-        //sh 'mvn -B clean install'
+        sh 'ls -la /jenkins/.m2'
+        sh 'mvn -B clean install'
       }
     }
 
