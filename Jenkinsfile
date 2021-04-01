@@ -8,7 +8,7 @@ pipeline {
   stages {
     stage('Build') {
       steps {
-        sh 'mvn -Dmaven.repo.local=/var/jenkins_home/.m2 -B clean install'
+        sh 'mvn -Dmaven.repo.local=/var/jenkins_home/.m2/repository -B clean install'
       }
     }
 
