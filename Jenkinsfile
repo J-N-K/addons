@@ -1,7 +1,7 @@
 pipeline {
-  environment {
-      JAVA_TOOL_OPTIONS = '-Duser.home=/'
-  }
+  # environment {
+  #     JAVA_TOOL_OPTIONS = '-Duser.home=$HOME'
+  # }
   agent {
     docker {
       image 'maven:3-alpine'
@@ -12,6 +12,7 @@ pipeline {
   stages {
     stage('Build') {
       steps {
+        sh 'pwd'
         sh 'mvn -B clean install'
       }
     }
