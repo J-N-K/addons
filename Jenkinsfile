@@ -15,7 +15,10 @@ pipeline {
     stage('Build') {
       steps {
         sh 'pwd'
-        sh 'mvn -B clean install'
+        sh 'echo $HOME'
+        sh 'echo $JENKINS_HOME'
+        sh 'ls -la .m2'
+        //sh 'mvn -B clean install'
       }
     }
 
