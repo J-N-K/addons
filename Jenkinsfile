@@ -1,7 +1,4 @@
 pipeline {
-  environment {
-       JAVA_TOOL_OPTIONS = '-Duser.home=/var/jenkins_home'
-  }
   agent {
     docker {
       image 'maven:3.6.3-jdk-11'
@@ -11,7 +8,7 @@ pipeline {
   stages {
     stage('Build') {
       steps {
-        sh 'mvn -B clean install'
+        sh 'mvn -Dmaven.repo.local=/var/jenkins_home -B clean install'
       }
     }
 
