@@ -7,7 +7,7 @@ pipeline {
   agent {
     docker {
       image 'maven:3-alpine'
-      args '-v /var/jenkins_home/.m2:/root/.m2'
+      args '-v /var/jenkins_home/.m2:/jenkins/.m2'
     }
 
   }
@@ -15,9 +15,8 @@ pipeline {
     stage('Build') {
       steps {
         sh 'pwd'
-        sh 'whoami'
-        sh 'ls -la /'
-        sh 'ls -la /root'
+        sh 'ls -la /jenkins'
+        sh 'ls -la /*'
         //sh 'mvn -B clean install'
       }
     }
