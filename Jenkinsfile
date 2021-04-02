@@ -15,8 +15,7 @@ pipeline {
 
   post {
     always {
-      archiveArtifacts artifacts: 'target/summary_report.html', fingerprint: true
-      junit 'build/reports/**/*.xml'
+      archiveArtifacts artifacts: 'target/summary_report.html, bundles/**/target/*-SNAPSHOT.jar', fingerprint: true
     }
   }
 }
