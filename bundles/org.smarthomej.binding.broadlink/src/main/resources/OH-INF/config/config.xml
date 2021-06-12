@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config-description:config-descriptions
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:config-description="https://openhab.org/schemas/config-description/v1.0.0"
+	xsi:schemaLocation="https://openhab.org/schemas/config-description/v1.0.0 https://openhab.org/schemas/config-description-1.0.0.xsd">
+
+	<config-description uri="thing-type:broadlink:remote-control-config">
+		<parameter name="ipAddress" type="text" required="true">
+			<label>Host</label>
+			<description>Hostname or IP address of this target.</description>
+			<context>network-address</context>
+		</parameter>
+		<parameter name="macAddress" type="text" required="true">
+			<label>MAC Address</label>
+		</parameter>
+		<parameter name="deviceType" type="integer" required="true">
+			<label>Device Type</label>
+			<description>The numeric representation of the device type.</description>
+		</parameter>
+	</config-description>
+
+</config-description:config-descriptions>

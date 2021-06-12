@@ -1,0 +1,97 @@
+body {
+    background-color: var(--broadlink-div-background-color-light);
+
+    font-family: -apple-system, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif, Helvetica, Arial, sans-serif;
+    font-size: 14px;
+
+    line-height: 1.5;
+    color: #222222;
+
+    --broadlink-div-background-color-dark: #c0c0c0;
+    --broadlink-div-background-color-light: lightgrey;
+    --broadlink-border: 1px solid black;
+    --broadlink-border-radius: 5px;
+
+    margin: 0;
+    padding: 0;
+}
+
+.content-div {
+    background-color: var(--broadlink-div-background-color-dark);
+    margin: 5px;
+}
+
+.header {
+    font-size: 2em;
+    padding: .2em;
+    border: var(--broadlink-border);
+    border-radius: var(--broadlink-border-radius);
+}
+
+.main {
+    font-size: 1.5em;
+    display: flex;
+    justify-content: center;
+}
+
+.footer {
+    text-align: right;
+    padding: .2em;
+    border: var(--broadlink-border);
+    border-radius: var(--broadlink-border-radius);
+}
+
+select, select option {
+    background: var(--broadlink-div-background-color-light);
+    font-size: 1em;
+}
+
+.table {
+    display: table;
+    border-spacing: 0;
+}
+
+
+.table-row {
+    display: table-row;
+}
+
+.table-row-left, .table-row-center, .table-row-right {
+    background-color: var(--broadlink-div-background-color-dark);
+    display: table-cell;
+    padding: .3em;
+    border: var(--broadlink-border);
+}
+
+.table-spacer {
+    display: table-row;
+    height: 0.2em;
+}
+
+.table-cell-spacer {
+    display: table-cell;
+    border: 0;
+    height: 0.3em;
+    background-color: var(--broadlink-div-background-color-light);
+}
+
+input[type="button"] {
+    font-size: inherit;
+    background-color: var(--broadlink-div-background-color-light);
+    border-radius: var(--broadlink-border-radius);
+}
+
+.table-row-left {
+    border-top-left-radius: var(--broadlink-border-radius);
+    border-bottom-left-radius: var(--broadlink-border-radius);
+    border-right: 0;
+}
+
+.table-row-center {
+    border-right: 0;
+}
+
+.table-row-right {
+    border-top-right-radius: var(--broadlink-border-radius);
+    border-bottom-right-radius: var(--broadlink-border-radius);
+}
