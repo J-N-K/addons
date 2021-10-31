@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<thing:thing-descriptions bindingId="tuya"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
+	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
+
+	<!-- Sample Thing Type -->
+	<bridge-type id="project">
+		<label>Tuya Cloud Project</label>
+		<description>This bridge represents a single cloud project.</description>
+
+		<config-description>
+			<parameter name="username" type="text" required="true">
+				<label>Username</label>
+				<description>Username in Tuya Smart/Smart Life app.</description>
+			</parameter>
+			<parameter name="password" type="text" required="true">
+				<context>password</context>
+				<label>Password</label>
+				<description>Password in Tuya Smart/Smart Life app.</description>
+			</parameter>
+			<parameter name="accessId" type="text" required="true">
+				<label>Access-ID</label>
+				<description>Access ID/Client ID of the Cloud project.</description>
+			</parameter>
+			<parameter name="accessSecret" type="text" required="true">
+				<context>password</context>
+				<label>Access Secret</label>
+				<description>Access Secret/Client Secret of the Cloud project.</description>
+			</parameter>
+			<parameter name="countryCode" type="integer" required="true">
+				<label>Country Code</label>
+				<description>The (telephone) country code used when registering in the app.</description>
+			</parameter>
+			<parameter name="schema" type="text" required="true">
+				<label>App Type</label>
+				<description>The app type (Tuya Smart or SmartLife).</description>
+				<options>
+					<option value="tuyaSmart">Tuya Smart</option>
+					<option value="smartLife">Smart Life</option>
+				</options>
+				<limitToOptions>true</limitToOptions>
+			</parameter>
+		</config-description>
+	</bridge-type>
+
+	<thing-type id="light">
+		<supported-bridge-type-refs>
+			<bridge-type-ref id="project"/>
+		</supported-bridge-type-refs>
+		<label>Light</label>
+
+		<config-description>
+			<parameter name="deviceId" type="text" required="true">
+				<label>Device ID</label>
+			</parameter>
+		</config-description>
+	</thing-type>
+
+	<channel-type id="workMode">
+		<item-type>String</item-type>
+		<label>Work Mode</label>
+	</channel-type>
+
+</thing:thing-descriptions>
