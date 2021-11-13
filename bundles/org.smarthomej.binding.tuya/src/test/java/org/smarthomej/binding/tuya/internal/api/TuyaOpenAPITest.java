@@ -106,7 +106,7 @@ public class TuyaOpenAPITest extends JavaTest {
 
         String resultString = decryptResult.get();
         // data contains 4-byte length, 12 byte IV, 128bits AuthTag
-        Assertions.assertEquals(data.length() - 4 - 12 - 16, resultString.length());
+        Assertions.assertEquals(227, resultString.length());
     }
 
     @Test
