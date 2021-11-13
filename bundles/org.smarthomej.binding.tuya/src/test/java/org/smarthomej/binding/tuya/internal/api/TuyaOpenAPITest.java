@@ -14,6 +14,7 @@ package org.smarthomej.binding.tuya.internal.api;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -26,6 +27,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.openhab.core.test.java.JavaTest;
 import org.smarthomej.binding.tuya.internal.ProjectConfiguration;
+import org.smarthomej.binding.tuya.internal.dto.StatusInfo;
 import org.smarthomej.binding.tuya.internal.dto.Token;
 import org.smarthomej.binding.tuya.internal.util.CryptoUtil;
 
@@ -99,5 +101,13 @@ public class TuyaOpenAPITest extends JavaTest {
         long t = 1636568272;
 
         Assertions.assertTrue(CryptoUtil.decrypt(data, password, t).isPresent());
+    }
+
+    @Test
+    public void canDeserializePrimitives() {
+        String in = "{'code': 'test_code', 'value' : true, t : 0}";
+        StatusInfo status = Objects.requireNonNull(gson.fromJson(in, StatusInfo.class));
+
+        Assertions.assertEquals("true", status.value);
     }
 }

@@ -172,16 +172,29 @@ public class ProjectHandler extends BaseBridgeHandler
     @Override
     public void connectionStateChanged(MqttConnectionState mqttConnectionState, @Nullable Throwable throwable) {
         if (MqttConnectionState.CONNECTED.equals(mqttConnectionState)) {
-            logger.debug("Established MQTT connection, subscribing to {}", mqttData.sourceTopic.device);
+            logger.debug("Established MQTT connection, subscribing to '{}'", mqttData.sourceTopic.device);
             MqttBrokerConnection connection = this.mqttConnection;
             if (connection != null) {
-                connection.subscribe(mqttData.sourceTopic.device, this);
+                connection.subscribe(mqttData.sourceTopic.device, this).handle((success, t) -> {
+                    if (t != null) {
+                        logger.warn("Subscribing failed, retrying.", t);
+                        scheduler.execute(this::startMqttConnection);
+                    } else if (success) {
+                        logger.trace("Successfully subscribed to '{}'", mqttData.sourceTopic.device);
+                    } else {
+                        logger.warn("Subscription failed, retrying.");
+                        scheduler.execute(this::startMqttConnection);
+                    }
+                    return null;
+                });
             }
         } else if (MqttConnectionState.DISCONNECTED.equals(mqttConnectionState)) {
             logger.debug("MQTT connection disconnected.");
             if (!disposing) {
                 startMqttConnection();
             }
+        } else {
+            logger.trace("MQTT connection changed state to {}", mqttConnectionState);
         }
     }
 

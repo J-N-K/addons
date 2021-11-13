@@ -10,28 +10,23 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package org.smarthomej.binding.tuya.internal.dto.mq;
-
-import java.util.List;
+package org.smarthomej.binding.tuya.internal.dto;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.smarthomej.binding.tuya.internal.dto.StatusInfo;
 
 /**
- * The {@link MqMessage} encapsulates the decoded MQTT message
+ * The {@link StatusInfo} encapsulates device status data
  *
  * @author Jan N. Klug - Initial contribution
  */
 @NonNullByDefault
-public class MqMessage {
-    public String dataId = "";
-    public String devId = "";
-    public String productKey = "";
-    public List<StatusInfo> status = List.of();
+public class StatusInfo {
+    public String code = "";
+    public String value = "";
+    public String t = "";
 
     @Override
     public String toString() {
-        return "MqMessage{dataId='" + dataId + "', devId='" + devId + "', productKey='" + productKey + "', status="
-                + status + "}";
+        return "StatusInfo{" + "code='" + code + "', value='" + value + "', t='" + t + "'}";
     }
 }

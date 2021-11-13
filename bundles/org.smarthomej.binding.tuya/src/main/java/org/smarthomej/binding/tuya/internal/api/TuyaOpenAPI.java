@@ -41,6 +41,7 @@ import org.smarthomej.binding.tuya.internal.dto.DeviceListInfo;
 import org.smarthomej.binding.tuya.internal.dto.DeviceSchema;
 import org.smarthomej.binding.tuya.internal.dto.Login;
 import org.smarthomej.binding.tuya.internal.dto.ResultResponse;
+import org.smarthomej.binding.tuya.internal.dto.StatusInfo;
 import org.smarthomej.binding.tuya.internal.dto.SubscribeMqttRequest;
 import org.smarthomej.binding.tuya.internal.dto.SubscribeMqttResponse;
 import org.smarthomej.binding.tuya.internal.dto.Token;
@@ -119,8 +120,7 @@ public class TuyaOpenAPI {
             return CompletableFuture.failedFuture(new IllegalStateException());
         }
 
-        Type type = new TypeToken<ResultResponse<Token>>() {
-        }.getType();
+        Type type = TypeToken.getParameterized(ResultResponse.class, Token.class).getType();
         ResultResponse<Token> result = Objects.requireNonNull(gson.fromJson(contentString, type));
 
         if (result.success) {
@@ -144,17 +144,7 @@ public class TuyaOpenAPI {
     public CompletableFuture<SubscribeMqttResponse> getMqttSubscription() {
         SubscribeMqttRequest subscriptionRequest = new SubscribeMqttRequest(token.uid, "123456");
         return request(HttpMethod.POST, "/v1.0/iot-03/open-hub/access-config", Map.of(), subscriptionRequest)
-                .thenCompose(contentString -> {
-                    Type type = new TypeToken<ResultResponse<SubscribeMqttResponse>>() {
-                    }.getType();
-                    ResultResponse<SubscribeMqttResponse> resultResponse = Objects
-                            .requireNonNull(gson.fromJson(contentString, type));
-                    if (resultResponse.success) {
-                        return CompletableFuture.completedFuture(resultResponse.result);
-                    } else {
-                        return CompletableFuture.failedFuture(new IllegalArgumentException(resultResponse.msg));
-                    }
-                });
+                .thenCompose(s -> processResponse(s, SubscribeMqttResponse.class));
     }
 
     public CompletableFuture<List<DeviceListInfo>> getDeviceList() {
@@ -162,26 +152,24 @@ public class TuyaOpenAPI {
                 "from", "", //
                 "page_no", "1", //
                 "page_size", "100");
+        return request(HttpMethod.GET, "/v1.0/users/" + token.uid + "/devices", params, null).thenCompose(
+                s -> processResponse(s, TypeToken.getParameterized(List.class, DeviceListInfo.class).getType()));
+    }
 
-        return request(HttpMethod.GET, "/v1.0/users/" + token.uid + "/devices", params, null)
-                .thenCompose(contentString -> {
-                    Type type = new TypeToken<ResultResponse<List<DeviceListInfo>>>() {
-                    }.getType();
-                    ResultResponse<List<DeviceListInfo>> resultResponse = Objects
-                            .requireNonNull(gson.fromJson(contentString, type));
-                    if (resultResponse.success) {
-                        return CompletableFuture.completedFuture(resultResponse.result);
-                    } else {
-                        return CompletableFuture.failedFuture(new IllegalArgumentException(resultResponse.msg));
-                    }
-                });
+    public CompletableFuture<DeviceSchema> getDeviceSchema(String deviceId) {
+        return request(HttpMethod.GET, "/v1.0/iot-03/devices/" + deviceId + "/specification", Map.of(), null)
+                .thenCompose(s -> processResponse(s, DeviceSchema.class));
+    }
+
+    public CompletableFuture<List<StatusInfo>> getDeviceStatus(String deviceId) {
+        return request(HttpMethod.GET, "/v1.0/iot-03/devices/" + deviceId + "/status", Map.of(), null).thenCompose(
+                s -> processResponse(s, TypeToken.getParameterized(List.class, StatusInfo.class).getType()));
     }
 
     public CompletableFuture<Boolean> sendCommand(String deviceId, CommandRequest command) {
         return request(HttpMethod.POST, "/v1.0/iot-03/devices/" + deviceId + "/commands", Map.of(), command)
                 .thenCompose(contentString -> {
-                    Type type = new TypeToken<ResultResponse<Boolean>>() {
-                    }.getType();
+                    Type type = TypeToken.getParameterized(ResultResponse.class, Boolean.class).getType();
                     ResultResponse<Boolean> resultResponse = Objects.requireNonNull(gson.fromJson(contentString, type));
                     if (resultResponse.success) {
                         return CompletableFuture.completedFuture(true);
@@ -191,21 +179,14 @@ public class TuyaOpenAPI {
                 });
     }
 
-    public CompletableFuture<DeviceSchema> getDeviceSchema(String deviceId) {
-        return request(HttpMethod.GET, "/v1.0/iot-03/devices/" + deviceId + "/specification", Map.of(), null)
-                .thenCompose(contentString -> {
-                    Type type = new TypeToken<ResultResponse<DeviceSchema>>() {
-                    }.getType();
-
-                    ResultResponse<DeviceSchema> resultResponse = Objects
-                            .requireNonNull(gson.fromJson(contentString, type));
-
-                    if (resultResponse.success) {
-                        return CompletableFuture.completedFuture(resultResponse.result);
-                    } else {
-                        return CompletableFuture.failedFuture(new IllegalArgumentException(resultResponse.msg));
-                    }
-                });
+    private <T> CompletableFuture<T> processResponse(String contentString, Type type) {
+        Type responseType = TypeToken.getParameterized(ResultResponse.class, type).getType();
+        ResultResponse<T> resultResponse = Objects.requireNonNull(gson.fromJson(contentString, responseType));
+        if (resultResponse.success) {
+            return CompletableFuture.completedFuture(resultResponse.result);
+        } else {
+            return CompletableFuture.failedFuture(new IllegalArgumentException(resultResponse.msg));
+        }
     }
 
     private CompletableFuture<String> request(HttpMethod method, String path, Map<String, String> params,

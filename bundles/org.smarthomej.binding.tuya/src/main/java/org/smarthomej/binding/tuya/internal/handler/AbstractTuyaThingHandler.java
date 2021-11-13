@@ -15,6 +15,8 @@ package org.smarthomej.binding.tuya.internal.handler;
 import static org.smarthomej.binding.tuya.internal.TuyaBindingConstants.STORAGE_SCHEMA;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -34,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.smarthomej.binding.tuya.internal.api.TuyaOpenAPI;
 import org.smarthomej.binding.tuya.internal.dto.DeviceSchema;
+import org.smarthomej.binding.tuya.internal.dto.StatusInfo;
 import org.smarthomej.binding.tuya.internal.util.DeviceConfiguration;
 
 import com.google.gson.Gson;
@@ -51,6 +54,7 @@ public abstract class AbstractTuyaThingHandler extends BaseThingHandler {
     protected @Nullable TuyaOpenAPI api;
     protected DeviceConfiguration configuration = new DeviceConfiguration();
     protected @Nullable DeviceSchema schema;
+    private @Nullable ScheduledFuture<?> requestJob;
 
     public AbstractTuyaThingHandler(Thing thing, Gson gson, StorageService storageService) {
         super(thing);
@@ -77,6 +81,13 @@ public abstract class AbstractTuyaThingHandler extends BaseThingHandler {
     public String getDeviceId() {
         return configuration.deviceId;
     }
+
+    /**
+     * process a status message
+     *
+     * @param status a single status method from MQTT connection or state request
+     */
+    public abstract void processStatusMessage(StatusInfo status);
 
     @Override
     public void bridgeStatusChanged(ThingStatusInfo bridgeStatusInfo) {
@@ -105,6 +116,7 @@ public abstract class AbstractTuyaThingHandler extends BaseThingHandler {
             }
             processSchema(schema);
             updateStatus(ThingStatus.ONLINE, ThingStatusDetail.NONE);
+            scheduler.execute(this::getInitialState);
         } else if (bridgeStatusInfo.getStatus() == ThingStatus.OFFLINE) {
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.BRIDGE_OFFLINE);
             api = null;
@@ -117,39 +129,58 @@ public abstract class AbstractTuyaThingHandler extends BaseThingHandler {
         return options.stream().map(c -> new CommandOption(c, c)).collect(Collectors.toList());
     }
 
-    private void updateSchema() {
+    private Optional<TuyaOpenAPI> getApiOrReschedule(Runnable method) {
         TuyaOpenAPI api = this.api;
-        if (api == null) {
-            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, "API not found");
-            scheduler.schedule(this::updateSchema, 60, TimeUnit.SECONDS);
-            return;
+        if (api == null || !api.isConnected()) {
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, "API not found or not connected");
+            stopRequestJob();
+            requestJob = scheduler.schedule(method, 60, TimeUnit.SECONDS);
+            return Optional.empty();
         }
 
-        if (!api.isConnected()) {
-            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.COMMUNICATION_ERROR, "API not connected");
-            scheduler.schedule(this::updateSchema, 60, TimeUnit.SECONDS);
-            return;
-        }
+        return Optional.of(api);
+    }
 
-        api.getDeviceSchema(configuration.deviceId).handle((deviceSchema, t) -> {
-            if (t != null) {
-                logger.warn("Failed to retrieve device schema, retrying");
-                scheduler.schedule(this::updateSchema, 60, TimeUnit.SECONDS);
-                return null;
-            }
-            storage.put(STORAGE_SCHEMA, gson.toJson(deviceSchema));
-            this.schema = deviceSchema;
-            checkThing();
-            return null;
-        });
+    private void getInitialState() {
+        getApiOrReschedule(this::getInitialState).ifPresent(api -> api.getDeviceStatus(configuration.deviceId)
+                .thenAccept(statusList -> statusList.forEach(this::processStatusMessage)));
+    }
+
+    private void updateSchema() {
+        getApiOrReschedule(this::updateSchema)
+                .ifPresent(api -> api.getDeviceSchema(configuration.deviceId).handle((deviceSchema, t) -> {
+                    if (t != null) {
+                        logger.warn("Failed to retrieve device schema, retrying");
+                        stopRequestJob();
+                        requestJob = scheduler.schedule(this::updateSchema, 60, TimeUnit.SECONDS);
+                        return null;
+                    }
+                    storage.put(STORAGE_SCHEMA, gson.toJson(deviceSchema));
+                    this.schema = deviceSchema;
+                    checkThing();
+                    return null;
+                }));
     }
 
     protected abstract void checkThing();
+
+    private void stopRequestJob() {
+        ScheduledFuture<?> future = requestJob;
+        if (future != null) {
+            future.cancel(true);
+            requestJob = null;
+        }
+    }
 
     @Override
     public void handleRemoval() {
         // remove device schema from database
         storage.put(STORAGE_SCHEMA, null);
         super.handleRemoval();
+    }
+
+    @Override
+    public void dispose() {
+        stopRequestJob();
     }
 }

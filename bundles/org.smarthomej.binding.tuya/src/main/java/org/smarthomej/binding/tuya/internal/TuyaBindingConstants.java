@@ -42,6 +42,8 @@ public class TuyaBindingConstants {
     public static final String CHANNEL_WHITE_BRIGHTNESS = "dimmer";
     public static final String CHANNEL_WHITE_TEMPERATURE = "colortemp";
     public static final String CHANNEL_WORKMODE = "workMode";
+    public static final String CHANNEL_SCENEDATA = "sceneData";
 
     public static final ChannelTypeUID CHANNEL_TYPE_UID_WORKMODE = new ChannelTypeUID(BINDING_ID, CHANNEL_WORKMODE);
+    public static final ChannelTypeUID CHANNEL_TYPE_UID_SCENEDATA = new ChannelTypeUID(BINDING_ID, CHANNEL_SCENEDATA);
 }

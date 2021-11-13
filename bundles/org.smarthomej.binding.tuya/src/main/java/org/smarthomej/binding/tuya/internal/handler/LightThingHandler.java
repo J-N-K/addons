@@ -16,6 +16,8 @@ import static org.openhab.core.thing.DefaultSystemChannelTypeProvider.SYSTEM_CHA
 import static org.openhab.core.thing.DefaultSystemChannelTypeProvider.SYSTEM_CHANNEL_TYPE_UID_COLOR;
 import static org.openhab.core.thing.DefaultSystemChannelTypeProvider.SYSTEM_CHANNEL_TYPE_UID_COLOR_TEMPERATURE;
 import static org.smarthomej.binding.tuya.internal.TuyaBindingConstants.CHANNEL_COLOR;
+import static org.smarthomej.binding.tuya.internal.TuyaBindingConstants.CHANNEL_SCENEDATA;
+import static org.smarthomej.binding.tuya.internal.TuyaBindingConstants.CHANNEL_TYPE_UID_SCENEDATA;
 import static org.smarthomej.binding.tuya.internal.TuyaBindingConstants.CHANNEL_TYPE_UID_WORKMODE;
 import static org.smarthomej.binding.tuya.internal.TuyaBindingConstants.CHANNEL_WHITE_BRIGHTNESS;
 import static org.smarthomej.binding.tuya.internal.TuyaBindingConstants.CHANNEL_WHITE_TEMPERATURE;
@@ -46,7 +48,7 @@ import org.slf4j.LoggerFactory;
 import org.smarthomej.binding.tuya.internal.api.TuyaOpenAPI;
 import org.smarthomej.binding.tuya.internal.dto.CommandRequest;
 import org.smarthomej.binding.tuya.internal.dto.DeviceSchema;
-import org.smarthomej.binding.tuya.internal.dto.mq.MqMessage;
+import org.smarthomej.binding.tuya.internal.dto.StatusInfo;
 import org.smarthomej.binding.tuya.internal.dto.types.ColorValue;
 import org.smarthomej.commons.SimpleDynamicCommandDescriptionProvider;
 
@@ -73,7 +75,8 @@ public class LightThingHandler extends AbstractTuyaThingHandler {
         this.dynamicCommandDescriptionProvider = dynamicCommandDescriptionProvider;
     }
 
-    public void processStatusMessage(MqMessage.Status status) {
+    @Override
+    public void processStatusMessage(StatusInfo status) {
         logger.trace("'{}' received status message '{}'", thing.getUID(), status);
         if ("colour_data".equals(status.code)) {
             ColorValue colorValue = Objects.requireNonNull(gson.fromJson(status.value, ColorValue.class));
@@ -93,6 +96,8 @@ public class LightThingHandler extends AbstractTuyaThingHandler {
             updateState(CHANNEL_WHITE_TEMPERATURE, newState);
         } else if ("work_mode".equals(status.code)) {
             updateState(CHANNEL_WORKMODE, new StringType(status.value));
+        } else if ("scene_data".equals(status.code)) {
+            updateState(CHANNEL_SCENEDATA, new StringType(status.value));
         }
     }
 
@@ -163,6 +168,15 @@ public class LightThingHandler extends AbstractTuyaThingHandler {
             }
         }
 
+        if (schema.hasFunction("scene_data")) {
+            if (thing.getChannel(CHANNEL_SCENEDATA) == null) {
+                ChannelUID channelUID = new ChannelUID(thingUID, CHANNEL_SCENEDATA);
+                Channel channel = callback.createChannelBuilder(channelUID, CHANNEL_TYPE_UID_SCENEDATA).build();
+                thingBuilder.withChannel(channel);
+                changed = true;
+            }
+        }
+
         if (changed) {
             updateThing(thingBuilder.build());
         }
@@ -210,7 +224,13 @@ public class LightThingHandler extends AbstractTuyaThingHandler {
                 commandRequest = new CommandRequest(List.of( //
                         new CommandRequest.Command<>("work_mode", command.toString())));
             }
+        } else if (CHANNEL_SCENEDATA.equals(channelId)) {
+            if (command instanceof StringType) {
+                commandRequest = new CommandRequest(List.of( //
+                        new CommandRequest.Command<>("scene_data", command.toString())));
+            }
         }
+
         if (commandRequest != null) {
             api.sendCommand(configuration.deviceId, commandRequest).handle((result, t) -> {
                 if (t != null) {

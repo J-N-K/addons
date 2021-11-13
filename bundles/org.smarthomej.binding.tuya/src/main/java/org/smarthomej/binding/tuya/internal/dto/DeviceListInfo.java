@@ -74,14 +74,4 @@ public class DeviceListInfo {
                 + "', productId='" + productId + "', productName='" + productName + "', category='" + category
                 + "', icon='" + icon + "', online=" + online + ", nodeId='" + nodeId + "'}";
     }
-
-    public static class StatusInfo {
-        public String code = "";
-        public Object value = new Object();
-
-        @Override
-        public String toString() {
-            return "StatusInfo{" + "code='" + code + "', value=" + value + "}";
-        }
-    }
 }

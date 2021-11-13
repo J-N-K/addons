@@ -60,6 +60,13 @@
 	<channel-type id="workMode">
 		<item-type>String</item-type>
 		<label>Work Mode</label>
+		<description>Work mode of the light (e.g. colour, white, scene, ...).</description>
+	</channel-type>
+
+	<channel-type id="sceneData" advanced="true">
+		<item-type>String</item-type>
+		<label>Scene Data</label>
+		<description>Scene description as JSON String.</description>
 	</channel-type>
 
 </thing:thing-descriptions>
