@@ -250,6 +250,7 @@ public class ProjectHandler extends BaseBridgeHandler
         stopApiConnectFuture();
         disposing = true;
         stopMqttConnection();
+        api.disconnect();
     }
 
     @Override

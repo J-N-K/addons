@@ -105,6 +105,11 @@ public class TuyaOpenAPI {
                 .exceptionally(t -> "").thenApply(this::processTokenResponse);
     }
 
+    public void disconnect() {
+        stopRefreshTokenJob();
+        token = new Token();
+    }
+
     private void stopRefreshTokenJob() {
         ScheduledFuture<?> refreshTokenJob = this.refreshTokenJob;
         if (refreshTokenJob != null) {
