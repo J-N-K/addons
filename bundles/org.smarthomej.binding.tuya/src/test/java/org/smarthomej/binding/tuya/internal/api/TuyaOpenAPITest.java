@@ -15,6 +15,7 @@ package org.smarthomej.binding.tuya.internal.api;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ScheduledExecutorService;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
@@ -100,7 +101,12 @@ public class TuyaOpenAPITest extends JavaTest {
         String password = "8699163a36d6cecc04df6000b7a580f5";
         long t = 1636568272;
 
-        Assertions.assertTrue(CryptoUtil.decrypt(data, password, t).isPresent());
+        Optional<String> decryptResult = CryptoUtil.decrypt(data, password, t);
+        Assertions.assertTrue(decryptResult.isPresent());
+
+        String resultString = decryptResult.get();
+        // data contains 4-byte length, 12 byte IV, 128bits AuthTag
+        Assertions.assertEquals(data.length() - 4 - 12 - 16, resultString.length());
     }
 
     @Test

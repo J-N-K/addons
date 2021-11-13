@@ -17,7 +17,6 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
 import java.util.Base64;
 import java.util.Optional;
 
@@ -72,11 +71,11 @@ public class CryptoUtil {
 
     public static String hmacSha256(String data, String secret) {
         try {
-            Mac sha256_HMAC = Mac.getInstance("HmacSHA256");
-            SecretKeySpec secret_key = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
-            sha256_HMAC.init(secret_key);
+            Mac sha256HMAC = Mac.getInstance("HmacSHA256");
+            SecretKeySpec secretKey = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+            sha256HMAC.init(secretKey);
 
-            return HexUtils.bytesToHex(sha256_HMAC.doFinal(data.getBytes(StandardCharsets.UTF_8)));
+            return HexUtils.bytesToHex(sha256HMAC.doFinal(data.getBytes(StandardCharsets.UTF_8)));
         } catch (NoSuchAlgorithmException | InvalidKeyException e) {
             //
         }
@@ -96,12 +95,11 @@ public class CryptoUtil {
             SecretKey secretKey = new SecretKeySpec(password.getBytes(StandardCharsets.UTF_8), 8, 16, "AES");
             final Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
             GCMParameterSpec parameterSpec = new GCMParameterSpec(GCM_TAG_LENGTH * 8, rawBuffer, 4, ivLength);
-            cipher.init(Cipher.ENCRYPT_MODE, secretKey, parameterSpec);
-            byte[] aad = new byte[] { 0x00, 0x00, (byte) ((t >> 24) & 0xff), (byte) ((t >> 16) & 0xff),
-                    (byte) ((t >> 8) & 0xff), (byte) (t & 0xff) };
-            cipher.updateAAD(aad);
+            cipher.init(Cipher.DECRYPT_MODE, secretKey, parameterSpec);
+            cipher.updateAAD(Long.toString(t).getBytes(StandardCharsets.UTF_8));
             byte[] decoded = cipher.doFinal(rawBuffer, 4 + ivLength, dataLength);
-            return Optional.of(new String(Arrays.copyOfRange(decoded, 0, dataLength - GCM_TAG_LENGTH)));
+            return Optional.of(new String(decoded));
+            // Arrays.copyOfRange(decoded, 0, dataLength - GCM_TAG_LENGTH)));
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | InvalidKeyException
                 | InvalidAlgorithmParameterException | IllegalBlockSizeException | BadPaddingException e) {
             LOGGER.warn("Decryption of MQ failed: {}", e.getMessage());
