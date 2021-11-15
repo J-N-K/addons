@@ -64,7 +64,7 @@ public class ProjectHandler extends BaseBridgeHandler
     private final Logger logger = LoggerFactory.getLogger(ProjectHandler.class);
 
     private final Gson gson = new Gson();
-    private final Map<String, LightThingHandler> deviceIdToThingHandler = new HashMap<>();
+    private final Map<String, AbstractTuyaThingHandler> deviceIdToThingHandler = new HashMap<>();
 
     // outgoing: Tuya API, incoming: MQTT
     private final TuyaOpenAPI api;
@@ -208,7 +208,7 @@ public class ProjectHandler extends BaseBridgeHandler
             logger.trace("Received decoded message {}", decoded);
             MqMessage message = Objects.requireNonNull(gson.fromJson(decoded, MqMessage.class));
 
-            LightThingHandler handler = deviceIdToThingHandler.get(message.devId);
+            AbstractTuyaThingHandler handler = deviceIdToThingHandler.get(message.devId);
             if (handler == null) {
                 logger.debug("Ignoring message {}, no handler in Map.", message);
                 return;
@@ -221,16 +221,16 @@ public class ProjectHandler extends BaseBridgeHandler
     public void childHandlerInitialized(ThingHandler childHandler, Thing childThing) {
         super.childHandlerInitialized(childHandler, childThing);
 
-        if (childHandler instanceof LightThingHandler) {
-            String deviceId = ((LightThingHandler) childHandler).getDeviceId();
-            deviceIdToThingHandler.put(deviceId, (LightThingHandler) childHandler);
+        if (childHandler instanceof AbstractTuyaThingHandler) {
+            String deviceId = ((AbstractTuyaThingHandler) childHandler).getDeviceId();
+            deviceIdToThingHandler.put(deviceId, (AbstractTuyaThingHandler) childHandler);
         }
     }
 
     @Override
     public void childHandlerDisposed(ThingHandler childHandler, Thing childThing) {
-        if (childHandler instanceof LightThingHandler) {
-            String deviceId = ((LightThingHandler) childHandler).getDeviceId();
+        if (childHandler instanceof AbstractTuyaThingHandler) {
+            String deviceId = ((AbstractTuyaThingHandler) childHandler).getDeviceId();
             deviceIdToThingHandler.remove(deviceId);
         }
 
