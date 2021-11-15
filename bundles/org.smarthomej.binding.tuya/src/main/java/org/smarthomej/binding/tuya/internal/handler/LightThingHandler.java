@@ -68,6 +68,7 @@ public class LightThingHandler extends AbstractTuyaThingHandler {
     private String onOffCommand = "switch_led";
     private String brightnessCommand = "bright_value";
     private String temperatureCommand = "temp_value";
+    private String sceneCommand = "scene_data";
 
     public LightThingHandler(Thing thing, Gson gson, StorageService storageService,
             SimpleDynamicCommandDescriptionProvider dynamicCommandDescriptionProvider) {
@@ -78,7 +79,7 @@ public class LightThingHandler extends AbstractTuyaThingHandler {
     @Override
     public void processStatusMessage(StatusInfo status) {
         logger.trace("'{}' received status message '{}'", thing.getUID(), status);
-        if ("colour_data".equals(status.code)) {
+        if (colorCommand.equals(status.code)) {
             ColorValue colorValue = Objects.requireNonNull(gson.fromJson(status.value, ColorValue.class));
             DecimalType hue = new DecimalType(colorValue.hue);
             PercentType sat = new PercentType(new BigDecimal(colorValue.saturation / 10.0));
@@ -86,17 +87,17 @@ public class LightThingHandler extends AbstractTuyaThingHandler {
             updateState(CHANNEL_LIGHT_COLOR, new HSBType(hue, sat, brightness));
         } else if ("switch_led".equals(status.code)) {
             updateState(CHANNEL_LIGHT_COLOR, OnOffType.from("true".equals(status.value)));
-        } else if ("bright_value".equals(status.code)) {
+        } else if (brightnessCommand.equals(status.code)) {
             PercentType newState = new PercentType(
                     new BigDecimal(status.value).divide(new BigDecimal(10), RoundingMode.HALF_UP));
             updateState(CHANNEL_LIGHT_WHITE_BRIGHTNESS, newState);
-        } else if ("temp_value".equals(status.code)) {
+        } else if (temperatureCommand.equals(status.code)) {
             PercentType newState = new PercentType(new BigDecimal(100)
                     .subtract(new BigDecimal(status.value).divide(new BigDecimal(10), RoundingMode.HALF_UP)));
             updateState(CHANNEL_LIGHT_WHITE_TEMPERATURE, newState);
         } else if ("work_mode".equals(status.code)) {
             updateState(CHANNEL_LIGHT_WORKMODE, new StringType(status.value));
-        } else if ("scene_data".equals(status.code)) {
+        } else if (sceneCommand.equals(status.code)) {
             updateState(CHANNEL_LIGHT_SCENEDATA, new StringType(status.value));
         }
     }
@@ -108,6 +109,12 @@ public class LightThingHandler extends AbstractTuyaThingHandler {
         }
         if (schema.hasFunction("bright_value_v2")) {
             brightnessCommand = "bright_value_v2";
+        }
+        if (schema.hasFunction("temp_value_v2")) {
+            temperatureCommand = "temp_value_v2";
+        }
+        if (schema.hasFunction("scene_data_v2")) {
+            sceneCommand = "scene_data_v2";
         }
         schema.functions.stream().filter(fcn -> "work_mode".equals(fcn.code)).findAny().ifPresent(workModes -> {
             DeviceSchema.Range range = Objects
@@ -122,7 +129,7 @@ public class LightThingHandler extends AbstractTuyaThingHandler {
         ThingUID thingUID = thing.getUID();
         boolean changed = false;
 
-        if (schema.hasFunction("colour_data")) {
+        if (schema.hasFunction("colour_data") || schema.hasFunction("colour_data_v2")) {
             if (thing.getChannel(CHANNEL_LIGHT_COLOR) == null) {
                 ChannelUID channelUID = new ChannelUID(thingUID, CHANNEL_LIGHT_COLOR);
                 Channel channel = callback.createChannelBuilder(channelUID, SYSTEM_CHANNEL_TYPE_UID_COLOR).build();
@@ -131,7 +138,7 @@ public class LightThingHandler extends AbstractTuyaThingHandler {
             }
         }
 
-        if (schema.hasFunction("bright_value")) {
+        if (schema.hasFunction("bright_value") || schema.hasFunction("bright_value_v2")) {
             if (thing.getChannel(CHANNEL_LIGHT_WHITE_BRIGHTNESS) == null) {
                 ChannelUID channelUID = new ChannelUID(thingUID, CHANNEL_LIGHT_WHITE_BRIGHTNESS);
                 Channel channel = callback.createChannelBuilder(channelUID, SYSTEM_CHANNEL_TYPE_UID_BRIGHTNESS).build();
@@ -140,7 +147,7 @@ public class LightThingHandler extends AbstractTuyaThingHandler {
             }
         }
 
-        if (schema.hasFunction("temp_value")) {
+        if (schema.hasFunction("temp_value") || schema.hasFunction("temp_value_v2")) {
             ChannelUID channelUID = new ChannelUID(thingUID, CHANNEL_LIGHT_WHITE_TEMPERATURE);
             Channel channel = callback.createChannelBuilder(channelUID, SYSTEM_CHANNEL_TYPE_UID_COLOR_TEMPERATURE)
                     .build();
@@ -157,7 +164,7 @@ public class LightThingHandler extends AbstractTuyaThingHandler {
             }
         }
 
-        if (schema.hasFunction("scene_data")) {
+        if (schema.hasFunction("scene_data") || schema.hasFunction("scene_data_v2")) {
             if (thing.getChannel(CHANNEL_LIGHT_SCENEDATA) == null) {
                 ChannelUID channelUID = new ChannelUID(thingUID, CHANNEL_LIGHT_SCENEDATA);
                 Channel channel = callback.createChannelBuilder(channelUID, CHANNEL_TYPE_UID_LIGHT_SCENEDATA).build();
@@ -216,7 +223,7 @@ public class LightThingHandler extends AbstractTuyaThingHandler {
         } else if (CHANNEL_LIGHT_SCENEDATA.equals(channelId)) {
             if (command instanceof StringType) {
                 commandRequest = new CommandRequest(List.of( //
-                        new CommandRequest.Command<>("scene_data", command.toString())));
+                        new CommandRequest.Command<>(sceneCommand, command.toString())));
             }
         }
 
