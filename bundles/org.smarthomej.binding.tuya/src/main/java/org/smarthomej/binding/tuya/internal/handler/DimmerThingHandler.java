@@ -46,7 +46,7 @@ import org.smarthomej.commons.SimpleDynamicCommandDescriptionProvider;
 import com.google.gson.Gson;
 
 /**
- * The {@link DimmerThingHandler} handles commands for dimmers
+ * The {@link DimmerThingHandler} handles commands and state updates for dimmers
  *
  * @author Jan N. Klug - Initial contribution
  */

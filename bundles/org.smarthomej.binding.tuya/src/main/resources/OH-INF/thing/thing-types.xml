@@ -57,6 +57,19 @@
 		</config-description>
 	</thing-type>
 
+	<thing-type id="dimmer">
+		<supported-bridge-type-refs>
+			<bridge-type-ref id="project"/>
+		</supported-bridge-type-refs>
+		<label>Dimmer</label>
+
+		<config-description>
+			<parameter name="deviceId" type="text" required="true">
+				<label>Device ID</label>
+			</parameter>
+		</config-description>
+	</thing-type>
+
 	<channel-type id="workMode">
 		<item-type>String</item-type>
 		<label>Work Mode</label>
@@ -67,6 +80,12 @@
 		<item-type>String</item-type>
 		<label>Scene Data</label>
 		<description>Scene description as JSON String.</description>
+	</channel-type>
+
+	<channel-type id="musicData" advanced="true">
+		<item-type>String</item-type>
+		<label>Music Data</label>
+		<description>Music description as JSON String.</description>
 	</channel-type>
 
 	<channel-type id="lightType" advanced="true">

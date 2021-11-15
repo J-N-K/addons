@@ -15,13 +15,8 @@ package org.smarthomej.binding.tuya.internal.handler;
 import static org.openhab.core.thing.DefaultSystemChannelTypeProvider.SYSTEM_CHANNEL_TYPE_UID_BRIGHTNESS;
 import static org.openhab.core.thing.DefaultSystemChannelTypeProvider.SYSTEM_CHANNEL_TYPE_UID_COLOR;
 import static org.openhab.core.thing.DefaultSystemChannelTypeProvider.SYSTEM_CHANNEL_TYPE_UID_COLOR_TEMPERATURE;
-import static org.smarthomej.binding.tuya.internal.TuyaBindingConstants.CHANNEL_LIGHT_COLOR;
-import static org.smarthomej.binding.tuya.internal.TuyaBindingConstants.CHANNEL_LIGHT_SCENEDATA;
-import static org.smarthomej.binding.tuya.internal.TuyaBindingConstants.CHANNEL_LIGHT_WHITE_BRIGHTNESS;
-import static org.smarthomej.binding.tuya.internal.TuyaBindingConstants.CHANNEL_LIGHT_WHITE_TEMPERATURE;
-import static org.smarthomej.binding.tuya.internal.TuyaBindingConstants.CHANNEL_LIGHT_WORKMODE;
-import static org.smarthomej.binding.tuya.internal.TuyaBindingConstants.CHANNEL_TYPE_UID_LIGHT_SCENEDATA;
-import static org.smarthomej.binding.tuya.internal.TuyaBindingConstants.CHANNEL_TYPE_UID_LIGHT_WORKMODE;
+import static org.openhab.core.thing.DefaultSystemChannelTypeProvider.SYSTEM_CHANNEL_TYPE_UID_POWER;
+import static org.smarthomej.binding.tuya.internal.TuyaBindingConstants.*;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -55,7 +50,7 @@ import org.smarthomej.commons.SimpleDynamicCommandDescriptionProvider;
 import com.google.gson.Gson;
 
 /**
- * The {@link LightThingHandler} handles commands for lights
+ * The {@link LightThingHandler} handles commands and state updates for lights
  *
  * @author Jan N. Klug - Initial contribution
  */
@@ -69,6 +64,8 @@ public class LightThingHandler extends AbstractTuyaThingHandler {
     private String brightnessCommand = "bright_value";
     private String temperatureCommand = "temp_value";
     private String sceneCommand = "scene_data";
+    private String musicCommand = "music_data";
+    private String workModeCommand = "work_mode";
 
     public LightThingHandler(Thing thing, Gson gson, StorageService storageService,
             SimpleDynamicCommandDescriptionProvider dynamicCommandDescriptionProvider) {
@@ -85,7 +82,7 @@ public class LightThingHandler extends AbstractTuyaThingHandler {
             PercentType sat = new PercentType(new BigDecimal(colorValue.saturation / 10.0));
             PercentType brightness = new PercentType(new BigDecimal(colorValue.brightness / 10.0));
             updateState(CHANNEL_LIGHT_COLOR, new HSBType(hue, sat, brightness));
-        } else if ("switch_led".equals(status.code)) {
+        } else if (onOffCommand.equals(status.code)) {
             updateState(CHANNEL_LIGHT_COLOR, OnOffType.from("true".equals(status.value)));
         } else if (brightnessCommand.equals(status.code)) {
             PercentType newState = new PercentType(
@@ -95,10 +92,12 @@ public class LightThingHandler extends AbstractTuyaThingHandler {
             PercentType newState = new PercentType(new BigDecimal(100)
                     .subtract(new BigDecimal(status.value).divide(new BigDecimal(10), RoundingMode.HALF_UP)));
             updateState(CHANNEL_LIGHT_WHITE_TEMPERATURE, newState);
-        } else if ("work_mode".equals(status.code)) {
+        } else if (workModeCommand.equals(status.code)) {
             updateState(CHANNEL_LIGHT_WORKMODE, new StringType(status.value));
         } else if (sceneCommand.equals(status.code)) {
             updateState(CHANNEL_LIGHT_SCENEDATA, new StringType(status.value));
+        } else if (musicCommand.equals(status.code)) {
+            updateState(CHANNEL_LIGHT_MUSICDATA, new StringType(status.value));
         }
     }
 
@@ -147,6 +146,17 @@ public class LightThingHandler extends AbstractTuyaThingHandler {
             }
         }
 
+        if (!schema.hasFunction("colour_data") && !schema.hasFunction("colour_data_v2")
+                && !schema.hasFunction("bright_value") && !schema.hasFunction("bright_value_v2")
+                && schema.hasFunction("switch_led")) {
+            if (thing.getChannel(CHANNEL_LIGHT_SWITCH) == null) {
+                ChannelUID channelUID = new ChannelUID(thingUID, CHANNEL_LIGHT_SWITCH);
+                Channel channel = callback.createChannelBuilder(channelUID, SYSTEM_CHANNEL_TYPE_UID_POWER).build();
+                thingBuilder.withChannel(channel);
+                changed = true;
+            }
+        }
+
         if (schema.hasFunction("temp_value") || schema.hasFunction("temp_value_v2")) {
             ChannelUID channelUID = new ChannelUID(thingUID, CHANNEL_LIGHT_WHITE_TEMPERATURE);
             Channel channel = callback.createChannelBuilder(channelUID, SYSTEM_CHANNEL_TYPE_UID_COLOR_TEMPERATURE)
@@ -168,6 +178,15 @@ public class LightThingHandler extends AbstractTuyaThingHandler {
             if (thing.getChannel(CHANNEL_LIGHT_SCENEDATA) == null) {
                 ChannelUID channelUID = new ChannelUID(thingUID, CHANNEL_LIGHT_SCENEDATA);
                 Channel channel = callback.createChannelBuilder(channelUID, CHANNEL_TYPE_UID_LIGHT_SCENEDATA).build();
+                thingBuilder.withChannel(channel);
+                changed = true;
+            }
+        }
+
+        if (schema.hasFunction("music_data")) {
+            if (thing.getChannel(CHANNEL_LIGHT_MUSICDATA) == null) {
+                ChannelUID channelUID = new ChannelUID(thingUID, CHANNEL_LIGHT_MUSICDATA);
+                Channel channel = callback.createChannelBuilder(channelUID, CHANNEL_TYPE_UID_LIGHT_MUSICDATA).build();
                 thingBuilder.withChannel(channel);
                 changed = true;
             }
@@ -224,6 +243,11 @@ public class LightThingHandler extends AbstractTuyaThingHandler {
             if (command instanceof StringType) {
                 commandRequest = new CommandRequest(List.of( //
                         new CommandRequest.Command<>(sceneCommand, command.toString())));
+            }
+        } else if (CHANNEL_LIGHT_MUSICDATA.equals(channelId)) {
+            if (command instanceof StringType) {
+                commandRequest = new CommandRequest(List.of( //
+                        new CommandRequest.Command<>(musicCommand, command.toString())));
             }
         }
 

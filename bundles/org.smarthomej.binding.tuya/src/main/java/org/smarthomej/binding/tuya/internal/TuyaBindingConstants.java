@@ -39,11 +39,13 @@ public class TuyaBindingConstants {
 
     public static final String STORAGE_SCHEMA = "schema";
 
+    public static final String CHANNEL_LIGHT_SWITCH = "switch";
     public static final String CHANNEL_LIGHT_COLOR = "color";
     public static final String CHANNEL_LIGHT_WHITE_BRIGHTNESS = "dimmer";
     public static final String CHANNEL_LIGHT_WHITE_TEMPERATURE = "colortemp";
     public static final String CHANNEL_LIGHT_WORKMODE = "workMode";
     public static final String CHANNEL_LIGHT_SCENEDATA = "sceneData";
+    public static final String CHANNEL_LIGHT_MUSICDATA = "musicData";
 
     public static final String CHANNEL_DIMMER_DIMMER_1 = "dimmer1";
     public static final String CHANNEL_DIMMER_TYPE_1 = "lightType1";
@@ -54,4 +56,6 @@ public class TuyaBindingConstants {
             CHANNEL_LIGHT_WORKMODE);
     public static final ChannelTypeUID CHANNEL_TYPE_UID_LIGHT_SCENEDATA = new ChannelTypeUID(BINDING_ID,
             CHANNEL_LIGHT_SCENEDATA);
+    public static final ChannelTypeUID CHANNEL_TYPE_UID_LIGHT_MUSICDATA = new ChannelTypeUID(BINDING_ID,
+            CHANNEL_LIGHT_MUSICDATA);
 }
