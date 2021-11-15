@@ -122,7 +122,7 @@ public class TuyaOpenAPI {
         if (contentString.isEmpty()) {
             this.token = new Token();
             callback.tuyaOpenApiStatus(false);
-            return CompletableFuture.failedFuture(new IllegalStateException());
+            return CompletableFuture.failedFuture(new ConnectionException("Failed to get token."));
         }
 
         Type type = TypeToken.getParameterized(ResultResponse.class, Token.class).getType();
@@ -143,7 +143,7 @@ public class TuyaOpenAPI {
         logger.warn("Request failed: {}, no token received", result);
         this.token = new Token();
         callback.tuyaOpenApiStatus(false);
-        return CompletableFuture.failedFuture(new IllegalStateException());
+        return CompletableFuture.failedFuture(new ConnectionException("Failed to get token."));
     }
 
     public CompletableFuture<SubscribeMqttResponse> getMqttSubscription() {
@@ -173,15 +173,7 @@ public class TuyaOpenAPI {
 
     public CompletableFuture<Boolean> sendCommand(String deviceId, CommandRequest command) {
         return request(HttpMethod.POST, "/v1.0/iot-03/devices/" + deviceId + "/commands", Map.of(), command)
-                .thenCompose(contentString -> {
-                    Type type = TypeToken.getParameterized(ResultResponse.class, Boolean.class).getType();
-                    ResultResponse<Boolean> resultResponse = Objects.requireNonNull(gson.fromJson(contentString, type));
-                    if (resultResponse.success) {
-                        return CompletableFuture.completedFuture(true);
-                    } else {
-                        return CompletableFuture.failedFuture(new IllegalArgumentException(resultResponse.msg));
-                    }
-                });
+                .thenCompose(s -> processResponse(s, Boolean.class));
     }
 
     private <T> CompletableFuture<T> processResponse(String contentString, Type type) {
@@ -193,8 +185,9 @@ public class TuyaOpenAPI {
             if (resultResponse.code == 1010) {
                 logger.warn("Server reported invalid token. This should never happen. Trying to relogin");
                 callback.tuyaOpenApiStatus(false);
+                return CompletableFuture.failedFuture(new ConnectionException(resultResponse.msg));
             }
-            return CompletableFuture.failedFuture(new IllegalArgumentException(resultResponse.msg));
+            return CompletableFuture.failedFuture(new IllegalStateException(resultResponse.msg));
         }
     }
 

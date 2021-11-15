@@ -51,7 +51,7 @@ public class TuyaContentListener extends BufferingResponseListener {
             logger.debug("Requesting '{}' (method='{}', content='{}') failed: {}", request.getURI(),
                     request.getMethod(), request.getContent(), result.getFailure().getMessage());
             future.completeExceptionally(
-                    new IllegalStateException("Request failed " + result.getFailure().getMessage()));
+                    new ConnectionException("Request failed " + result.getFailure().getMessage()));
         } else {
             switch (response.getStatus()) {
                 case HttpStatus.OK_200:
@@ -66,14 +66,14 @@ public class TuyaContentListener extends BufferingResponseListener {
                     if (content != null) {
                         future.complete(new String(content, StandardCharsets.UTF_8));
                     } else {
-                        future.completeExceptionally(new IllegalArgumentException("Content is null."));
+                        future.completeExceptionally(new ConnectionException("Content is null."));
                     }
                     break;
                 default:
                     logger.debug("Requesting '{}' (method='{}', content='{}') failed: {} {}", request.getURI(),
                             request.getMethod(), request.getContent(), response.getStatus(), response.getReason());
                     future.completeExceptionally(
-                            new IllegalArgumentException("Invalid status code " + response.getStatus()));
+                            new ConnectionException("Invalid status code " + response.getStatus()));
             }
         }
     }

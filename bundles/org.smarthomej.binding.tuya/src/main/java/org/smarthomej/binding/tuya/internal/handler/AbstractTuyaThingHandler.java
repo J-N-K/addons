@@ -34,6 +34,7 @@ import org.openhab.core.types.CommandOption;
 import org.openhab.core.util.UIDUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.smarthomej.binding.tuya.internal.api.ConnectionException;
 import org.smarthomej.binding.tuya.internal.api.TuyaOpenAPI;
 import org.smarthomej.binding.tuya.internal.dto.DeviceSchema;
 import org.smarthomej.binding.tuya.internal.dto.StatusInfo;
@@ -149,7 +150,11 @@ public abstract class AbstractTuyaThingHandler extends BaseThingHandler {
     private void updateSchema() {
         getApiOrReschedule(this::updateSchema)
                 .ifPresent(api -> api.getDeviceSchema(configuration.deviceId).handle((deviceSchema, t) -> {
-                    if (t != null) {
+                    if (t instanceof ConnectionException) {
+                        logger.warn("Failed to retrieve device schema, connection failed. Retrying after connection has been restored.");
+                        stopRequestJob();
+                        return null;
+                    } else if (t != null) {
                         logger.warn("Failed to retrieve device schema, retrying");
                         stopRequestJob();
                         requestJob = scheduler.schedule(this::updateSchema, 60, TimeUnit.SECONDS);
