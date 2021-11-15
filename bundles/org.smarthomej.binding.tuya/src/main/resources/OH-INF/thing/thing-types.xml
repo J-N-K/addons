@@ -69,4 +69,9 @@
 		<description>Scene description as JSON String.</description>
 	</channel-type>
 
+	<channel-type id="lightType" advanced="true">
+		<item-type>String</item-type>
+		<label>Type of Light</label>
+	</channel-type>
+
 </thing:thing-descriptions>

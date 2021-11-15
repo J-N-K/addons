@@ -50,8 +50,7 @@ public class TuyaContentListener extends BufferingResponseListener {
         if (result.isFailed()) {
             logger.debug("Requesting '{}' (method='{}', content='{}') failed: {}", request.getURI(),
                     request.getMethod(), request.getContent(), result.getFailure().getMessage());
-            future.completeExceptionally(
-                    new ConnectionException("Request failed " + result.getFailure().getMessage()));
+            future.completeExceptionally(new ConnectionException("Request failed " + result.getFailure().getMessage()));
         } else {
             switch (response.getStatus()) {
                 case HttpStatus.OK_200:

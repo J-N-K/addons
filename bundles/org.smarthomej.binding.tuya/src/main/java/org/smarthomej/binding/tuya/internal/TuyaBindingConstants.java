@@ -29,6 +29,7 @@ public class TuyaBindingConstants {
     // List of all Thing Type UIDs
     public static final ThingTypeUID THING_TYPE_PROJECT = new ThingTypeUID(BINDING_ID, "project");
     public static final ThingTypeUID THING_TYPE_LIGHT = new ThingTypeUID(BINDING_ID, "light");
+    public static final ThingTypeUID THING_TYPE_DIMMER = new ThingTypeUID(BINDING_ID, "dimmer");
 
     public static final String PROPERTY_UUID = "uuid";
     public static final String PROPERTY_CATEGORY = "category";
@@ -38,12 +39,19 @@ public class TuyaBindingConstants {
 
     public static final String STORAGE_SCHEMA = "schema";
 
-    public static final String CHANNEL_COLOR = "color";
-    public static final String CHANNEL_WHITE_BRIGHTNESS = "dimmer";
-    public static final String CHANNEL_WHITE_TEMPERATURE = "colortemp";
-    public static final String CHANNEL_WORKMODE = "workMode";
-    public static final String CHANNEL_SCENEDATA = "sceneData";
+    public static final String CHANNEL_LIGHT_COLOR = "color";
+    public static final String CHANNEL_LIGHT_WHITE_BRIGHTNESS = "dimmer";
+    public static final String CHANNEL_LIGHT_WHITE_TEMPERATURE = "colortemp";
+    public static final String CHANNEL_LIGHT_WORKMODE = "workMode";
+    public static final String CHANNEL_LIGHT_SCENEDATA = "sceneData";
 
-    public static final ChannelTypeUID CHANNEL_TYPE_UID_WORKMODE = new ChannelTypeUID(BINDING_ID, CHANNEL_WORKMODE);
-    public static final ChannelTypeUID CHANNEL_TYPE_UID_SCENEDATA = new ChannelTypeUID(BINDING_ID, CHANNEL_SCENEDATA);
+    public static final String CHANNEL_DIMMER_DIMMER_1 = "dimmer1";
+    public static final String CHANNEL_DIMMER_TYPE_1 = "lightType1";
+    public static final String CHANNEL_DIMMER_DIMMER_2 = "dimmer2";
+    public static final String CHANNEL_DIMMER_TYPE_2 = "lightType2";
+
+    public static final ChannelTypeUID CHANNEL_TYPE_UID_LIGHT_WORKMODE = new ChannelTypeUID(BINDING_ID,
+            CHANNEL_LIGHT_WORKMODE);
+    public static final ChannelTypeUID CHANNEL_TYPE_UID_LIGHT_SCENEDATA = new ChannelTypeUID(BINDING_ID,
+            CHANNEL_LIGHT_SCENEDATA);
 }

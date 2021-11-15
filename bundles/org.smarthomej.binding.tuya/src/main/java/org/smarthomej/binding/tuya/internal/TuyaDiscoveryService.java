@@ -16,6 +16,7 @@ import static org.smarthomej.binding.tuya.internal.TuyaBindingConstants.CONFIG_D
 import static org.smarthomej.binding.tuya.internal.TuyaBindingConstants.CONFIG_LOCAL_KEY;
 import static org.smarthomej.binding.tuya.internal.TuyaBindingConstants.PROPERTY_CATEGORY;
 import static org.smarthomej.binding.tuya.internal.TuyaBindingConstants.PROPERTY_UUID;
+import static org.smarthomej.binding.tuya.internal.TuyaBindingConstants.THING_TYPE_DIMMER;
 import static org.smarthomej.binding.tuya.internal.TuyaBindingConstants.THING_TYPE_LIGHT;
 
 import java.util.Date;
@@ -47,10 +48,11 @@ import org.smarthomej.binding.tuya.internal.handler.ProjectHandler;
  */
 @NonNullByDefault
 public class TuyaDiscoveryService extends AbstractDiscoveryService implements ThingHandlerService {
-    public static final Set<ThingTypeUID> SUPPORTED_THING_TYPES = Set.of(THING_TYPE_LIGHT);
+    public static final Set<ThingTypeUID> SUPPORTED_THING_TYPES = Set.of(THING_TYPE_LIGHT, THING_TYPE_DIMMER);
 
     private static final Map<ThingTypeUID, List<String>> THING_TYPE_CATEGORY = Map.of( //
-            THING_TYPE_LIGHT, List.of("dj", "xdd", "fwd", "dc", "dd", "gyd", "fsd"));
+            THING_TYPE_LIGHT, List.of("dj", "xdd", "fwd", "dc", "dd", "gyd", "fsd"), //
+            THING_TYPE_DIMMER, List.of("tgq"));
     private static final int SEARCH_TIME = 5;
 
     private final Logger logger = LoggerFactory.getLogger(TuyaDiscoveryService.class);

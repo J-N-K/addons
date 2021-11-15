@@ -30,6 +30,8 @@ import org.openhab.core.thing.ThingStatus;
 import org.openhab.core.thing.ThingStatusDetail;
 import org.openhab.core.thing.ThingStatusInfo;
 import org.openhab.core.thing.binding.BaseThingHandler;
+import org.openhab.core.thing.binding.ThingHandlerCallback;
+import org.openhab.core.thing.binding.builder.ThingBuilder;
 import org.openhab.core.types.CommandOption;
 import org.openhab.core.util.UIDUtils;
 import org.slf4j.Logger;
@@ -151,7 +153,8 @@ public abstract class AbstractTuyaThingHandler extends BaseThingHandler {
         getApiOrReschedule(this::updateSchema)
                 .ifPresent(api -> api.getDeviceSchema(configuration.deviceId).handle((deviceSchema, t) -> {
                     if (t instanceof ConnectionException) {
-                        logger.warn("Failed to retrieve device schema, connection failed. Retrying after connection has been restored.");
+                        logger.warn(
+                                "Failed to retrieve device schema, connection failed. Retrying after connection has been restored.");
                         stopRequestJob();
                         return null;
                     } else if (t != null) {
@@ -162,12 +165,18 @@ public abstract class AbstractTuyaThingHandler extends BaseThingHandler {
                     }
                     storage.put(STORAGE_SCHEMA, gson.toJson(deviceSchema));
                     this.schema = deviceSchema;
-                    checkThing();
+
+                    ThingHandlerCallback callback = getCallback();
+                    if (callback == null) {
+                        logger.warn("Thing '{}' has no callback, cannot check thing", thing.getUID());
+                        return null;
+                    }
+                    checkThing(deviceSchema, editThing(), callback);
                     return null;
                 }));
     }
 
-    protected abstract void checkThing();
+    protected abstract void checkThing(DeviceSchema schema, ThingBuilder thingBuilder, ThingHandlerCallback callback);
 
     private void stopRequestJob() {
         ScheduledFuture<?> future = requestJob;
