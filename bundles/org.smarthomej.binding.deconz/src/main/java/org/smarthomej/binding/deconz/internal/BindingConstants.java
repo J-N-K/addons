@@ -13,10 +13,19 @@
  */
 package org.smarthomej.binding.deconz.internal;
 
+import java.lang.reflect.Type;
+import java.util.Map;
+import java.util.Objects;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.library.types.PercentType;
 import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.core.thing.type.ChannelTypeUID;
+import org.smarthomej.binding.deconz.internal.types.ChannelInfo;
+import org.smarthomej.commons.util.ResourceUtil;
+
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 /**
  * The {@link BindingConstants} class defines common constants, which are
@@ -53,6 +62,7 @@ public class BindingConstants {
             "carbonmonoxidesensor");
     public static final ThingTypeUID THING_TYPE_AIRQUALITY_SENSOR = new ThingTypeUID(BINDING_ID, "airqualitysensor");
     public static final ThingTypeUID THING_TYPE_MOISTURE_SENSOR = new ThingTypeUID(BINDING_ID, "moisturesensor");
+    public static final ThingTypeUID THING_TYPE_GENERIC_SENSOR = new ThingTypeUID(BINDING_ID, "generic-sensor");
 
     // Special sensor - Thermostat
     public static final ThingTypeUID THING_TYPE_THERMOSTAT = new ThingTypeUID(BINDING_ID, "thermostat");
@@ -156,4 +166,13 @@ public class BindingConstants {
     public static final int BRIGHTNESS_MIN = 0;
     public static final int BRIGHTNESS_MAX = 254;
     public static final double BRIGHTNESS_FACTOR = BRIGHTNESS_MAX / PercentType.HUNDRED.doubleValue();
+
+    public static final Map<String, ChannelInfo> SENSOR_CHANNEL_MAP = getSensorChannelInfos();
+
+    private static Map<String, ChannelInfo> getSensorChannelInfos() {
+        String json = ResourceUtil.readString(BindingConstants.class, "sensor_channel.json");
+        Type mapType = TypeToken.getParameterized(Map.class, String.class, ChannelInfo.class).getType();
+        Gson gson = new Gson();
+        return Objects.requireNonNullElse(gson.fromJson(json, mapType), Map.of());
+    }
 }

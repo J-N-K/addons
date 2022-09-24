@@ -1,5 +1,4 @@
 /**
- * Copyright (c) 2010-2021 Contributors to the openHAB project
  * Copyright (c) 2021-2022 Contributors to the SmartHome/J project
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -13,13 +12,13 @@
  */
 package org.smarthomej.binding.deconz.internal.handler;
 
+import static org.openhab.core.library.unit.SIUnits.CELSIUS;
 import static org.smarthomej.binding.deconz.internal.BindingConstants.*;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-
-import javax.measure.Unit;
+import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -31,68 +30,66 @@ import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingStatus;
 import org.openhab.core.thing.ThingStatusDetail;
+import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.core.thing.binding.builder.ThingBuilder;
 import org.openhab.core.thing.type.ChannelKind;
+import org.openhab.core.thing.type.ChannelTypeUID;
 import org.openhab.core.types.Command;
+import org.openhab.core.types.RefreshType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.smarthomej.binding.deconz.internal.Util;
+import org.smarthomej.binding.deconz.internal.ChannelUpdater;
 import org.smarthomej.binding.deconz.internal.dto.DeconzBaseMessage;
 import org.smarthomej.binding.deconz.internal.dto.SensorConfig;
 import org.smarthomej.binding.deconz.internal.dto.SensorMessage;
 import org.smarthomej.binding.deconz.internal.dto.SensorState;
+import org.smarthomej.binding.deconz.internal.dto.SensorUpdateConfig;
+import org.smarthomej.binding.deconz.internal.types.ChannelInfo;
 import org.smarthomej.binding.deconz.internal.types.ResourceType;
 
 import com.google.gson.Gson;
 
 /**
- * This sensor Thing doesn't establish any connections, that is done by the bridge Thing.
+ * The sensor {@link GenericSensorThingHandler} automatically detects available channels based on the information
+ * received on initialization and updates the thing accordingly. After initialization, it forwards commands to the
+ * bridge or states to the framework.
  *
- * It waits for the bridge to come online, grab the websocket connection and bridge configuration
- * and registers to the websocket connection as a listener.
- *
- * A REST API call is made to get the initial sensor state.
- *
- * Every sensor and switch is supported by this Thing, because a unified state is kept
- * in {@link #sensorState}. Every field that got received by the REST API for this specific
- * sensor is published to the framework.
- *
- * @author David Graeff - Initial contribution
- * @author Lukas Agethen - Refactored to provide better extensibility
+ * @author Jan N. Klug - Initial contribution
  */
 @NonNullByDefault
-public abstract class SensorBaseThingHandler extends DeconzBaseThingHandler {
-    private final Logger logger = LoggerFactory.getLogger(SensorBaseThingHandler.class);
-    /**
-     * The sensor state. Contains all possible fields for all supported sensors and switches
-     */
-    protected SensorConfig sensorConfig = new SensorConfig();
-    protected SensorState sensorState = new SensorState();
-    /**
-     * Prevent a dispose/init cycle while this flag is set. Use for property updates
-     */
-    private boolean ignoreConfigurationUpdate;
+public class GenericSensorThingHandler extends DeconzBaseThingHandler {
+    public static final Set<ThingTypeUID> SUPPORTED_THING_TYPES = Set.of(THING_TYPE_GENERIC_SENSOR);
 
-    public SensorBaseThingHandler(Thing thing, Gson gson) {
+    private static final List<String> CONFIG_CHANNELS = List.of(CHANNEL_BATTERY_LEVEL, CHANNEL_BATTERY_LOW,
+            CHANNEL_ENABLED, CHANNEL_TEMPERATURE);
+
+    private final Logger logger = LoggerFactory.getLogger(GenericSensorThingHandler.class);
+
+    private SensorState sensorState = new SensorState();
+    private SensorConfig sensorConfig = new SensorConfig();
+
+    private boolean ignoreConfigurationUpdate = false;
+
+    public GenericSensorThingHandler(Thing thing, Gson gson) {
         super(thing, gson, ResourceType.SENSORS);
     }
 
     @Override
-    public abstract void handleCommand(ChannelUID channelUID, Command command);
-
-    protected abstract boolean createTypeSpecificChannels(ThingBuilder thingBuilder, SensorConfig sensorConfig,
-            SensorState sensorState);
-
-    protected abstract List<String> getConfigChannels();
-
-    @Override
-    public void handleConfigurationUpdate(Map<String, Object> configurationParameters) {
-        if (!ignoreConfigurationUpdate) {
-            super.handleConfigurationUpdate(configurationParameters);
+    public void handleCommand(ChannelUID channelUID, Command command) {
+        if (command instanceof RefreshType) {
+            sensorState.remove("buttonevent");
+            // valueUpdated(channelUID, sensorState, false);
+            return;
+        }
+        if (CHANNEL_ENABLED.equals(channelUID.getId())) {
+            if (command instanceof OnOffType) {
+                SensorUpdateConfig newConfig = new SensorUpdateConfig();
+                newConfig.on = OnOffType.ON.equals(command);
+                sendCommand(newConfig, command, channelUID, null);
+            }
         }
     }
 
-    @Override
     protected void processStateResponse(DeconzBaseMessage stateResponse) {
         if (!(stateResponse instanceof SensorMessage)) {
             return;
@@ -140,7 +137,7 @@ public abstract class SensorBaseThingHandler extends DeconzBaseThingHandler {
             }
         }
 
-        if (createTypeSpecificChannels(thingBuilder, sensorConfig, sensorState)) {
+        if (checkAndCreateChannels(thingBuilder, sensorConfig, sensorState)) {
             thingEdited = true;
         }
 
@@ -162,56 +159,9 @@ public abstract class SensorBaseThingHandler extends DeconzBaseThingHandler {
         updateStatus(ThingStatus.ONLINE);
     }
 
-    /**
-     * Update channel value from {@link SensorConfig} object - override to include further channels
-     *
-     * @param channelUID
-     * @param newConfig
-     */
-    protected void valueUpdated(ChannelUID channelUID, SensorConfig newConfig) {
-        Integer batteryLevel = newConfig.battery;
-        switch (channelUID.getId()) {
-            case CHANNEL_BATTERY_LEVEL:
-                if (batteryLevel != null) {
-                    updateState(channelUID, new DecimalType(batteryLevel.longValue()));
-                }
-                break;
-            case CHANNEL_BATTERY_LOW:
-                if (batteryLevel != null) {
-                    updateState(channelUID, OnOffType.from(batteryLevel <= 10));
-                }
-                break;
-            default:
-                // other cases covered by sub-class
-        }
-    }
-
-    /**
-     * Update channel value from {@link SensorState} object - override to include further channels
-     *
-     * @param channelUID
-     * @param newState
-     * @param initializing
-     */
-    protected void valueUpdated(ChannelUID channelUID, SensorState newState, boolean initializing) {
-        switch (channelUID.getId()) {
-            case CHANNEL_LAST_UPDATED:
-                String lastUpdated = (String) newState.get("lastupdated");
-                if (lastUpdated != null && !"none".equals(lastUpdated)) {
-                    updateState(channelUID, Util.convertTimestampToDateTime(lastUpdated));
-                }
-                break;
-            case CHANNEL_BATTERY_LOW:
-                updateSwitchChannel(channelUID, newState.get("lowbattery"));
-                break;
-            default:
-                // other cases covered by sub-class
-        }
-    }
-
     @Override
     public void messageReceived(DeconzBaseMessage message) {
-        logger.trace("{} received {}", thing.getUID(), message);
+        logger.error("{} received {}", thing.getUID(), message);
         if (message instanceof SensorMessage) {
             SensorMessage sensorMessage = (SensorMessage) message;
             SensorConfig sensorConfig = sensorMessage.config;
@@ -231,42 +181,83 @@ public abstract class SensorBaseThingHandler extends DeconzBaseThingHandler {
         }
     }
 
+    private void updateChannels(SensorState newState, boolean initializing) {
+        sensorState = newState;
+        newState.forEach((k, v) -> valueUpdated(k, v, initializing));
+    }
+
     private void updateChannels(SensorConfig newConfig) {
         this.sensorConfig = newConfig;
-        List<String> configChannels = getConfigChannels();
         thing.getChannels().stream().map(Channel::getUID)
-                .filter(channelUID -> configChannels.contains(channelUID.getId()))
+                .filter(channelUID -> CONFIG_CHANNELS.contains(channelUID.getId()))
                 .forEach((channelUID) -> valueUpdated(channelUID, newConfig));
     }
 
-    protected void updateChannels(SensorState newState, boolean initializing) {
-        sensorState = newState;
-        thing.getChannels().forEach(channel -> valueUpdated(channel.getUID(), newState, initializing));
-    }
+    protected void valueUpdated(ChannelUID channelUID, SensorConfig newConfig) {
+        Integer batteryLevel = newConfig.battery;
 
-    protected void updateSwitchChannel(ChannelUID channelUID, @Nullable Object value) {
-        if (!(value instanceof Boolean)) {
-            return;
+        switch (channelUID.getId()) {
+            case CHANNEL_BATTERY_LEVEL:
+                if (batteryLevel != null) {
+                    updateState(channelUID, new DecimalType(batteryLevel.longValue()));
+                }
+                break;
+            case CHANNEL_BATTERY_LOW:
+                if (batteryLevel != null) {
+                    updateState(channelUID, OnOffType.from(batteryLevel <= 10));
+                }
+                break;
+            case CHANNEL_ENABLED:
+                updateState(channelUID, OnOffType.from(newConfig.on));
+                break;
+            case CHANNEL_TEMPERATURE:
+                Float temperature = newConfig.temperature;
+                if (temperature != null) {
+                    updateState(channelUID, new QuantityType<>(temperature / 100, CELSIUS));
+                }
+                break;
         }
-        updateState(channelUID, OnOffType.from(((Boolean) value)));
     }
 
-    protected void updateDecimalTypeChannel(ChannelUID channelUID, @Nullable Object value) {
-        if (!(value instanceof Integer)) {
-            return;
+    private void valueUpdated(String key, @Nullable Object value, boolean initializing) {
+        ChannelInfo channelInfo = SENSOR_CHANNEL_MAP.get(key);
+        if (value != null && channelInfo != null) {
+            ChannelUpdater.get(channelInfo.converter).ifPresent(c -> c.update(channelInfo, value, this::updateState));
         }
-        updateState(channelUID, new DecimalType(((Number) value).longValue()));
     }
 
-    protected void updateQuantityTypeChannel(ChannelUID channelUID, @Nullable Object value, Unit<?> unit) {
-        updateQuantityTypeChannel(channelUID, value, unit, 1.0);
-    }
+    private boolean checkAndCreateChannels(ThingBuilder thingBuilder, SensorConfig sensorConfig,
+            SensorState sensorState) {
+        boolean thingEdited = false;
 
-    protected void updateQuantityTypeChannel(ChannelUID channelUID, @Nullable Object value, Unit<?> unit,
-            double scaling) {
-        if (!(value instanceof Integer)) {
-            return;
+        // some Xiaomi sensors
+        if (sensorConfig.temperature != null && createChannel(thingBuilder, CHANNEL_TEMPERATURE, ChannelKind.STATE)) {
+            thingEdited = true;
         }
-        updateState(channelUID, new QuantityType<>(((Number) value).doubleValue() * scaling, unit));
+
+        for (String stateKey : sensorState.keySet()) {
+            ChannelInfo channelInfo = SENSOR_CHANNEL_MAP.get(stateKey);
+            if (channelInfo != null) {
+                if (createChannel(thingBuilder, channelInfo.channelId, new ChannelTypeUID(channelInfo.channelTypeUID),
+                        ChannelKind.STATE)) {
+                    thingEdited = true;
+                }
+            }
+        }
+
+        // e.g. Aqara Cube
+        if (sensorState.containsKey("gesture") && (createChannel(thingBuilder, CHANNEL_GESTURE, ChannelKind.STATE)
+                || createChannel(thingBuilder, CHANNEL_GESTUREEVENT, ChannelKind.TRIGGER))) {
+            thingEdited = true;
+        }
+
+        return thingEdited;
+    }
+
+    @Override
+    public void handleConfigurationUpdate(Map<String, Object> configurationParameters) {
+        if (!ignoreConfigurationUpdate) {
+            super.handleConfigurationUpdate(configurationParameters);
+        }
     }
 }

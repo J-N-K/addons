@@ -81,7 +81,7 @@ public class SensorThermostatThingHandler extends SensorBaseThingHandler {
     @Override
     public void handleCommand(ChannelUID channelUID, Command command) {
         if (command instanceof RefreshType) {
-            sensorState.buttonevent = null;
+            sensorState.remove("buttonevent");
             valueUpdated(channelUID, sensorState, false);
             return;
         }
@@ -169,10 +169,10 @@ public class SensorThermostatThingHandler extends SensorBaseThingHandler {
         super.valueUpdated(channelUID, newState, initializing);
         switch (channelUID.getId()) {
             case CHANNEL_TEMPERATURE:
-                updateQuantityTypeChannel(channelUID, newState.temperature, CELSIUS, 1.0 / 100);
+                updateQuantityTypeChannel(channelUID, newState.get("temperature"), CELSIUS, 1.0 / 100);
                 break;
             case CHANNEL_VALVE_POSITION:
-                Integer valve = newState.valve;
+                Integer valve = (Integer) newState.get("valve");
                 if (valve == null || valve < 0 || valve > 100) {
                     updateState(channelUID, UnDefType.UNDEF);
                 } else {
@@ -180,7 +180,7 @@ public class SensorThermostatThingHandler extends SensorBaseThingHandler {
                 }
                 break;
             case CHANNEL_WINDOW_OPEN:
-                String open = newState.windowopen;
+                String open = (String) newState.get("windowopen");
                 if (open != null) {
                     updateState(channelUID, "Closed".equals(open) ? OpenClosedType.CLOSED : OpenClosedType.OPEN);
                 }
@@ -234,7 +234,7 @@ public class SensorThermostatThingHandler extends SensorBaseThingHandler {
         boolean changed = false;
         ThingBuilder thingBuilder = editThing();
 
-        if (sensorState != null && sensorState.windowopen != null) {
+        if (sensorState != null && sensorState.get("windowopen") != null) {
             if (createChannel(thingBuilder, CHANNEL_WINDOW_OPEN, ChannelKind.STATE)) {
                 changed = true;
             }

@@ -20,7 +20,6 @@ import static org.smarthomej.binding.deconz.internal.BindingConstants.*;
 import java.io.IOException;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -39,16 +38,13 @@ import org.openhab.core.thing.binding.ThingHandlerCallback;
 import org.openhab.core.thing.binding.builder.ChannelBuilder;
 import org.openhab.core.thing.binding.builder.ThingBuilder;
 import org.openhab.core.types.UnDefType;
+import org.smarthomej.binding.deconz.internal.Util;
 import org.smarthomej.binding.deconz.internal.dto.SensorMessage;
 import org.smarthomej.binding.deconz.internal.handler.SensorThermostatThingHandler;
 import org.smarthomej.binding.deconz.internal.handler.SensorThingHandler;
-import org.smarthomej.binding.deconz.internal.types.LightType;
-import org.smarthomej.binding.deconz.internal.types.LightTypeDeserializer;
 import org.smarthomej.binding.deconz.internal.types.ThermostatMode;
-import org.smarthomej.binding.deconz.internal.types.ThermostatModeGsonTypeAdapter;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 /**
  * This class provides tests for deconz sensors
@@ -59,16 +55,24 @@ import com.google.gson.GsonBuilder;
 @ExtendWith(MockitoExtension.class)
 @NonNullByDefault
 public class SensorsTest {
-    private @NonNullByDefault({}) Gson gson;
+    private final Gson gson = Util.createCustomizedGson();
 
     private @Mock @NonNullByDefault({}) ThingHandlerCallback thingHandlerCallback;
 
-    @BeforeEach
-    public void initialize() {
-        GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.registerTypeAdapter(LightType.class, new LightTypeDeserializer());
-        gsonBuilder.registerTypeAdapter(ThermostatMode.class, new ThermostatModeGsonTypeAdapter());
-        gson = gsonBuilder.create();
+    @Test
+    public void vibrationTest() throws IOException {
+        SensorMessage sensorMessage = DeconzTest.getObjectFromJson("vibration.json", SensorMessage.class, gson);
+        assertNotNull(sensorMessage);
+
+        ThingUID thingUID = new ThingUID("deconz", "sensor");
+        ChannelUID channelUID = new ChannelUID(thingUID, "vibration");
+        Thing sensor = ThingBuilder.create(THING_TYPE_VIBRATION_SENSOR, thingUID)
+                .withChannel(ChannelBuilder.create(channelUID, "Switch").build()).build();
+        SensorThingHandler sensorThingHandler = new SensorThingHandler(sensor, gson);
+        sensorThingHandler.setCallback(thingHandlerCallback);
+
+        sensorThingHandler.messageReceived(sensorMessage);
+        Mockito.verify(thingHandlerCallback).stateUpdated(eq(channelUID), eq(OnOffType.ON));
     }
 
     @Test

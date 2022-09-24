@@ -31,22 +31,14 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 import org.smarthomej.binding.deconz.internal.handler.DeconzBridgeHandler;
+import org.smarthomej.binding.deconz.internal.handler.GenericSensorThingHandler;
 import org.smarthomej.binding.deconz.internal.handler.GroupThingHandler;
 import org.smarthomej.binding.deconz.internal.handler.LightThingHandler;
 import org.smarthomej.binding.deconz.internal.handler.SensorThermostatThingHandler;
 import org.smarthomej.binding.deconz.internal.handler.SensorThingHandler;
 import org.smarthomej.binding.deconz.internal.netutils.AsyncHttpClient;
-import org.smarthomej.binding.deconz.internal.types.GroupType;
-import org.smarthomej.binding.deconz.internal.types.GroupTypeDeserializer;
-import org.smarthomej.binding.deconz.internal.types.LightType;
-import org.smarthomej.binding.deconz.internal.types.LightTypeDeserializer;
-import org.smarthomej.binding.deconz.internal.types.ResourceType;
-import org.smarthomej.binding.deconz.internal.types.ResourceTypeDeserializer;
-import org.smarthomej.binding.deconz.internal.types.ThermostatMode;
-import org.smarthomej.binding.deconz.internal.types.ThermostatModeGsonTypeAdapter;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 /**
  * The {@link DeconzHandlerFactory} is responsible for creating things and thing
@@ -59,7 +51,8 @@ import com.google.gson.GsonBuilder;
 public class DeconzHandlerFactory extends BaseThingHandlerFactory {
     private static final Set<ThingTypeUID> SUPPORTED_THING_TYPES_UIDS = Stream
             .of(DeconzBridgeHandler.SUPPORTED_THING_TYPES, LightThingHandler.SUPPORTED_THING_TYPE_UIDS,
-                    SensorThingHandler.SUPPORTED_THING_TYPES, SensorThermostatThingHandler.SUPPORTED_THING_TYPES,
+                    SensorThingHandler.SUPPORTED_THING_TYPES, SensorThingHandler.DEPRECATED_THING_TYPES,
+                    SensorThermostatThingHandler.SUPPORTED_THING_TYPES, GenericSensorThingHandler.SUPPORTED_THING_TYPES,
                     GroupThingHandler.SUPPORTED_THING_TYPE_UIDS)
             .flatMap(Set::stream).collect(Collectors.toSet());
 
@@ -79,12 +72,7 @@ public class DeconzHandlerFactory extends BaseThingHandlerFactory {
         this.stateDescriptionProvider = stateDescriptionProvider;
         this.commandDescriptionProvider = commandDescriptionProvider;
 
-        GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.registerTypeAdapter(LightType.class, new LightTypeDeserializer());
-        gsonBuilder.registerTypeAdapter(GroupType.class, new GroupTypeDeserializer());
-        gsonBuilder.registerTypeAdapter(ResourceType.class, new ResourceTypeDeserializer());
-        gsonBuilder.registerTypeAdapter(ThermostatMode.class, new ThermostatModeGsonTypeAdapter());
-        gson = gsonBuilder.create();
+        gson = Util.createCustomizedGson();
     }
 
     @Override
@@ -101,12 +89,15 @@ public class DeconzHandlerFactory extends BaseThingHandlerFactory {
                     new AsyncHttpClient(httpClientFactory.getCommonHttpClient()), gson);
         } else if (LightThingHandler.SUPPORTED_THING_TYPE_UIDS.contains(thingTypeUID)) {
             return new LightThingHandler(thing, gson, stateDescriptionProvider, commandDescriptionProvider);
-        } else if (SensorThingHandler.SUPPORTED_THING_TYPES.contains(thingTypeUID)) {
+        } else if (SensorThingHandler.SUPPORTED_THING_TYPES.contains(thingTypeUID)
+                || SensorThingHandler.DEPRECATED_THING_TYPES.contains(thingTypeUID)) {
             return new SensorThingHandler(thing, gson);
         } else if (SensorThermostatThingHandler.SUPPORTED_THING_TYPES.contains(thingTypeUID)) {
             return new SensorThermostatThingHandler(thing, gson);
         } else if (GroupThingHandler.SUPPORTED_THING_TYPE_UIDS.contains(thingTypeUID)) {
             return new GroupThingHandler(thing, gson, commandDescriptionProvider);
+        } else if (GenericSensorThingHandler.SUPPORTED_THING_TYPES.contains(thingTypeUID)) {
+            return new GenericSensorThingHandler(thing, gson);
         }
 
         return null;

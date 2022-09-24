@@ -1,0 +1,72 @@
+{
+  "dark": {
+    "channelId": "dark",
+    "channelTypeUID": "deconz:dark",
+    "converter": "OnOffType"
+  },
+  "daylight": {
+    "channelId": "daylight",
+    "channelTypeUID": "deconz:daylight",
+    "converter": "OnOffType"
+  },
+  "fire": {
+    "channelId": "fire",
+    "channelTypeUID": "deconz:fire",
+    "converter": "OnOffType"
+  },
+  "humidity": {
+    "channelId": "humidity",
+    "channelTypeUID": "deconz:humidity",
+    "converter": "QuantityType",
+    "converterParams": {
+      "unit": "%",
+      "scaling": 0.01
+    }
+  },
+  "lastupdated": {
+    "channelId": "last_updated",
+    "channelTypeUID": "deconz:last_updated",
+    "converter": "DateTimeType",
+    "converterParams": {}
+  },
+  "lightlevel": {
+    "channelId": "light_level",
+    "channelTypeUID": "deconz:light_level",
+    "converter": "DecimalType"
+  },
+  "lux": {
+    "channelId": "lightlux",
+    "channelTypeUID": "deconz:lightlux",
+    "converter": "QuantityType",
+    "converterParams": {
+      "unit": "lx"
+    }
+  },
+  "temperature": {
+    "channelId": "temperature",
+    "channelTypeUID": "deconz:temperature",
+    "converter": "QuantityType",
+    "converterParams": {
+      "unit": "°C",
+      "scaling": 0.01
+    }
+  },
+  "tiltangle": {
+    "channelId": "tiltangle",
+    "channelTypeUID": "deconz:tiltangle",
+    "converter": "QuantityType",
+    "converterParams": {
+      "unit": "°"
+    }
+  },
+  "vibration": {
+    "channelId": "vibration",
+    "channelTypeUID": "deconz:vibration",
+    "converter": "OnOffType"
+  },
+  "vibrationstrength": {
+    "channelId": "vibrationstrength",
+    "channelTypeUID": "deconz:vibrationstrength",
+    "converter": "DecimalType"
+  }
+}

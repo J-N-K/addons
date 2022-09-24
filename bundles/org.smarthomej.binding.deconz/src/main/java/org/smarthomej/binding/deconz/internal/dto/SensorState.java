@@ -13,7 +13,7 @@
  */
 package org.smarthomej.binding.deconz.internal.dto;
 
-import java.util.Arrays;
+import java.util.HashMap;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -28,80 +28,6 @@ import org.eclipse.jdt.annotation.Nullable;
  * @author David Graeff - Initial contribution
  */
 @NonNullByDefault
-public class SensorState {
-    /** Some presence sensors, the daylight sensor and all light sensors provide the "dark" boolean. */
-    public @Nullable Boolean dark;
-    /** The daylight sensor and all light sensors provides the "daylight" boolean. */
-    public @Nullable Boolean daylight;
-    /** Light sensors provide a light level value. */
-    public @Nullable Integer lightlevel;
-    /** Light sensors provide a lux value. */
-    public @Nullable Integer lux;
-    /** Temperature sensors provide a degrees value. */
-    public @Nullable Double temperature;
-    /** Humidity sensors provide a percent value. */
-    public @Nullable Double humidity;
-    /** OpenClose sensors provide a boolean value. */
-    public @Nullable Boolean open;
-    /** fire sensors provide a boolean value. */
-    public @Nullable Boolean fire;
-    /** water sensors provide a boolean value. */
-    public @Nullable Boolean water;
-    /** alarm sensors provide a boolean value. */
-    public @Nullable Boolean alarm;
-    /** IAS Zone sensors provide a boolean value. */
-    public @Nullable Boolean tampered;
-    /** vibration sensors provide a boolean value. */
-    public @Nullable Boolean vibration;
-    /** carbonmonoxide sensors provide a boolean value. */
-    public @Nullable Boolean carbonmonoxide;
-    /** Pressure sensors provide a hPa value. */
-    public @Nullable Integer pressure;
-    /** Presence sensors provide this boolean. */
-    public @Nullable Boolean presence;
-    /** Power sensors provide this value in Watts. */
-    public @Nullable Double power;
-    /** Batttery sensors provide this value */
-    public @Nullable Integer battery;
-    /** Consumption sensors provide this value in Watts/hour. */
-    public @Nullable Boolean lowbattery;
-    /** Consumption sensors provide this value in Watts/hour. */
-    public @Nullable Double consumption;
-    public @Nullable Double consumption2;
-    /** Power sensors provide this value in Volt. */
-    public @Nullable Double voltage;
-    /** Power sensors provide this value in Milliampere. */
-    public @Nullable Double current;
-    /** Light sensors and the daylight sensor provide a status integer that can have various semantics. */
-    public @Nullable Integer status;
-    /** Switches provide this value. */
-    public @Nullable Integer buttonevent;
-    /** Switches may provide this value. */
-    public @Nullable Integer gesture;
-    /** Thermostat may provide this value. */
-    public @Nullable Integer valve;
-    /** air quality sensors provide this value */
-    public @Nullable String airquality;
-    public @Nullable Integer airqualityppb;
-    /** moisture sensors provide this value */
-    public @Nullable Integer moisture;
-    /** Thermostats may provide this value */
-    public @Nullable String windowopen;
-    /** deCONZ sends a last update string with every event. */
-    public @Nullable String lastupdated;
-    /** color controllers send xy values */
-    public double @Nullable [] xy;
+public class SensorState extends HashMap<String, @Nullable Object> {
 
-    @Override
-    public String toString() {
-        return "SensorState{" + "dark=" + dark + ", daylight=" + daylight + ", lightlevel=" + lightlevel + ", lux="
-                + lux + ", temperature=" + temperature + ", humidity=" + humidity + ", open=" + open + ", fire=" + fire
-                + ", water=" + water + ", alarm=" + alarm + ", tampered=" + tampered + ", vibration=" + vibration
-                + ", carbonmonoxide=" + carbonmonoxide + ", pressure=" + pressure + ", presence=" + presence
-                + ", power=" + power + ", battery=" + battery + ", lowbattery=" + lowbattery + ", consumption="
-                + consumption + ", voltage=" + voltage + ", current=" + current + ", status=" + status
-                + ", buttonevent=" + buttonevent + ", gesture=" + gesture + ", valve=" + valve + ", airquality='"
-                + airquality + "'" + ", airqualityppb=" + airqualityppb + ", windowopen='" + windowopen + "'"
-                + ", lastupdated='" + lastupdated + "'" + ", xy=" + Arrays.toString(xy) + "}";
-    }
 }

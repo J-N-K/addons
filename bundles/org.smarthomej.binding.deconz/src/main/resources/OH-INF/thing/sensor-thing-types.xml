@@ -4,6 +4,21 @@
 	xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
 	xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
 
+	<thing-type id="generic-sensor">
+		<supported-bridge-type-refs>
+			<bridge-type-ref id="deconz"/>
+		</supported-bridge-type-refs>
+		<label>Sensor</label>
+
+		<properties>
+			<property name="thingTypeVersion">1</property>
+		</properties>
+
+		<representation-property>uid</representation-property>
+
+		<config-description-ref uri="thing-type:deconz:sensor"/>
+	</thing-type>
+
 	<thing-type id="presencesensor">
 		<supported-bridge-type-refs>
 			<bridge-type-ref id="deconz"/>
@@ -24,22 +39,6 @@
 
 		<config-description-ref uri="thing-type:deconz:sensor"/>
 	</thing-type>
-
-	<channel-type id="last_updated">
-		<item-type>DateTime</item-type>
-		<label>Last Updated</label>
-		<description>The date and time when the sensor was last updated.</description>
-		<category>Time</category>
-		<state readOnly="true" pattern="%1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS"/>
-	</channel-type>
-
-	<channel-type id="last_seen">
-		<item-type>DateTime</item-type>
-		<label>Last Seen</label>
-		<description>The date and time when the sensor was last seen.</description>
-		<category>Time</category>
-		<state readOnly="true" pattern="%1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS"/>
-	</channel-type>
 
 	<thing-type id="powersensor">
 		<supported-bridge-type-refs>
@@ -184,7 +183,7 @@
 		</state>
 	</channel-type>
 
-	<thing-type id="lightsensor">
+	<thing-type id="lightsensor" listed="false">
 		<supported-bridge-type-refs>
 			<bridge-type-ref id="deconz"/>
 		</supported-bridge-type-refs>
@@ -231,7 +230,7 @@
 		<state readOnly="true"/>
 	</channel-type>
 
-	<thing-type id="temperaturesensor">
+	<thing-type id="temperaturesensor" listed="false">
 		<supported-bridge-type-refs>
 			<bridge-type-ref id="deconz"/>
 		</supported-bridge-type-refs>
@@ -255,7 +254,7 @@
 		<state readOnly="true" pattern="%.2f %unit%"></state>
 	</channel-type>
 
-	<thing-type id="humiditysensor">
+	<thing-type id="humiditysensor" listed="false">
 		<supported-bridge-type-refs>
 			<bridge-type-ref id="deconz"/>
 		</supported-bridge-type-refs>
@@ -424,21 +423,7 @@
 		<config-description-ref uri="thing-type:deconz:sensor"/>
 	</thing-type>
 
-	<channel-type id="alarm">
-		<item-type>Switch</item-type>
-		<label>Alarm</label>
-		<description>Alarm was triggered.</description>
-		<state readOnly="true"/>
-	</channel-type>
-
-	<channel-type id="tampered">
-		<item-type>Switch</item-type>
-		<label>Tampered</label>
-		<description>A zone is being tampered.</description>
-		<state readOnly="true"/>
-	</channel-type>
-
-	<thing-type id="vibrationsensor">
+	<thing-type id="vibrationsensor" listed="false">
 		<supported-bridge-type-refs>
 			<bridge-type-ref id="deconz"/>
 		</supported-bridge-type-refs>
@@ -453,13 +438,6 @@
 
 		<config-description-ref uri="thing-type:deconz:sensor"/>
 	</thing-type>
-
-	<channel-type id="vibration">
-		<item-type>Switch</item-type>
-		<label>Vibration</label>
-		<description>Vibration was detected.</description>
-		<state readOnly="true"/>
-	</channel-type>
 
 	<thing-type id="batterysensor">
 		<supported-bridge-type-refs>
@@ -496,13 +474,6 @@
 		<config-description-ref uri="thing-type:deconz:sensor"/>
 	</thing-type>
 
-	<channel-type id="carbonmonoxide">
-		<item-type>Switch</item-type>
-		<label>Carbon-monoxide</label>
-		<description>Carbon-monoxide was detected.</description>
-		<state readOnly="true"/>
-	</channel-type>
-
 	<thing-type id="airqualitysensor">
 		<supported-bridge-type-refs>
 			<bridge-type-ref id="deconz"/>
@@ -519,18 +490,6 @@
 		<config-description-ref uri="thing-type:deconz:sensor"/>
 	</thing-type>
 
-	<channel-type id="airquality">
-		<item-type>String</item-type>
-		<label>Air Quality</label>
-		<state readOnly="true"/>
-	</channel-type>
-
-	<channel-type id="airqualityppb">
-		<item-type>Number:Dimensionless</item-type>
-		<label>Air Quality (ppb)</label>
-		<state readOnly="true"/>
-	</channel-type>
-
 	<thing-type id="moisturesensor">
 		<supported-bridge-type-refs>
 			<bridge-type-ref id="deconz"/>
@@ -538,21 +497,14 @@
 		<label>Moisture Sensor</label>
 		<description>A moisture sensor</description>
 		<channels>
-			<channel typeId="moisture" id="moisture"></channel>
-			<channel typeId="last_updated" id="last_updated"></channel>
+			<channel typeId="moisture" id="moisture"/>
+			<channel typeId="last_updated" id="last_updated"/>
 		</channels>
 
 		<representation-property>uid</representation-property>
 
 		<config-description-ref uri="thing-type:deconz:sensor"/>
 	</thing-type>
-
-	<channel-type id="moisture">
-		<item-type>Number:Dimensionless</item-type>
-		<label>Moisture</label>
-		<description>Current moisture</description>
-		<state readOnly="true" pattern="%.1f %unit%"></state>
-	</channel-type>
 
 	<thing-type id="thermostat">
 		<supported-bridge-type-refs>
@@ -572,20 +524,62 @@
 		<config-description-ref uri="thing-type:deconz:sensor"/>
 	</thing-type>
 
+	<channel-type id="vibration">
+		<item-type>Switch</item-type>
+		<label>Vibration</label>
+		<description>Vibration was detected.</description>
+		<state readOnly="true"/>
+	</channel-type>
+
+	<channel-type id="vibrationstrength">
+		<item-type>Number</item-type>
+		<label>Vibration Strength</label>
+		<state readOnly="true"/>
+	</channel-type>
+
+	<channel-type id="carbonmonoxide">
+		<item-type>Switch</item-type>
+		<label>Carbon-monoxide</label>
+		<description>Carbon-monoxide was detected.</description>
+		<state readOnly="true"/>
+	</channel-type>
+
+	<channel-type id="airquality">
+		<item-type>String</item-type>
+		<label>Air Quality</label>
+		<state readOnly="true"/>
+	</channel-type>
+
+	<channel-type id="airqualityppb">
+		<item-type>Number:Dimensionless</item-type>
+		<label>Air Quality (ppb)</label>
+		<state readOnly="true"/>
+	</channel-type>
+
+	<channel-type id="moisture">
+		<item-type>Number:Dimensionless</item-type>
+		<label>Moisture</label>
+		<description>Current moisture</description>
+		<state readOnly="true" pattern="%.1f %unit%"></state>
+	</channel-type>
+
 	<channel-type id="locked">
 		<item-type>Switch</item-type>
 		<label>Locked</label>
 		<description>Status of this thermostat's childlock.</description>
 		<category>Lock</category>
 	</channel-type>
+
 	<channel-type id="windowopen">
 		<item-type>Contact</item-type>
 		<label>Window Open</label>
 	</channel-type>
+
 	<channel-type id="externalwindowopen">
 		<item-type>Contact</item-type>
 		<label>External Window Open</label>
 	</channel-type>
+
 	<channel-type id="heatsetpoint">
 		<item-type>Number:Temperature</item-type>
 		<label>Target temperature</label>
@@ -593,6 +587,7 @@
 		<category>Heating</category>
 		<state pattern="%.1f %unit%" step="0.5" max="28" min="6"/>
 	</channel-type>
+
 	<channel-type id="mode">
 		<item-type>String</item-type>
 		<label>Mode</label>
@@ -612,11 +607,48 @@
 		<description>Temperature offset</description>
 		<state pattern="%.2f %unit%" step="0.01"></state>
 	</channel-type>
+
 	<channel-type id="valve">
 		<item-type>Number:Dimensionless</item-type>
 		<label>Valve position</label>
 		<description>Current valve position</description>
 		<state readOnly="true" pattern="%.1f %unit%"/>
+	</channel-type>
+
+	<channel-type id="tiltangle">
+		<item-type>Number:Angle</item-type>
+		<label>Tilt Angle</label>
+		<state readOnly="true" pattern="%.0f %unit%"/>
+	</channel-type>
+
+	<channel-type id="last_updated">
+		<item-type>DateTime</item-type>
+		<label>Last Updated</label>
+		<description>The date and time when the sensor was last updated.</description>
+		<category>Time</category>
+		<state readOnly="true" pattern="%1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS"/>
+	</channel-type>
+
+	<channel-type id="last_seen">
+		<item-type>DateTime</item-type>
+		<label>Last Seen</label>
+		<description>The date and time when the sensor was last seen.</description>
+		<category>Time</category>
+		<state readOnly="true" pattern="%1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS"/>
+	</channel-type>
+
+	<channel-type id="alarm">
+		<item-type>Switch</item-type>
+		<label>Alarm</label>
+		<description>Alarm was triggered.</description>
+		<state readOnly="true"/>
+	</channel-type>
+
+	<channel-type id="tampered">
+		<item-type>Switch</item-type>
+		<label>Tampered</label>
+		<description>A zone is being tampered.</description>
+		<state readOnly="true"/>
 	</channel-type>
 
 </thing:thing-descriptions>

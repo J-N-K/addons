@@ -77,4 +77,15 @@ public class ResourceUtil {
             }
         }).orElse(Map.of()));
     }
+
+    public static String readString(Class<?> clazz, String fileName) {
+        try {
+            InputStream inputStream = Objects
+                    .requireNonNull(getResourceStream(clazz, fileName).orElse(InputStream.nullInputStream()));
+            return new String(inputStream.readAllBytes());
+        } catch (IOException e) {
+            LOGGER.warn("Could not read string from '{}', binding will probably fail: {}", fileName, e.getMessage());
+        }
+        return "";
+    }
 }

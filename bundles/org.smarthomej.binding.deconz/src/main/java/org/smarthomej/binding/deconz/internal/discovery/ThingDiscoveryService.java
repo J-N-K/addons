@@ -257,6 +257,7 @@ public class ThingDiscoveryService extends AbstractDiscoveryService implements D
         properties.put(Thing.PROPERTY_VENDOR, sensor.manufacturername);
         properties.put(Thing.PROPERTY_MODEL_ID, sensor.modelid);
 
+        String description = "Sensor";
         if (sensor.type.contains("Daylight")) { // deCONZ specific: Software simulated daylight sensor
             thingTypeUID = THING_TYPE_DAYLIGHT_SENSOR;
         } else if (sensor.type.contains("Power")) { // ZHAPower, CLIPPower
@@ -272,13 +273,16 @@ public class ThingDiscoveryService extends AbstractDiscoveryService implements D
                 thingTypeUID = THING_TYPE_SWITCH;
             }
         } else if (sensor.type.contains("LightLevel")) { // ZHALightLevel
-            thingTypeUID = THING_TYPE_LIGHT_SENSOR;
+            thingTypeUID = THING_TYPE_GENERIC_SENSOR;
+            description = "Light Level Sensor";
         } else if (sensor.type.contains("ZHAAirQuality")) { // ZHAAirQuality
             thingTypeUID = THING_TYPE_AIRQUALITY_SENSOR;
         } else if (sensor.type.contains("ZHATemperature")) { // ZHATemperature
-            thingTypeUID = THING_TYPE_TEMPERATURE_SENSOR;
+            thingTypeUID = THING_TYPE_GENERIC_SENSOR;
+            description = "Temperature Sensor";
         } else if (sensor.type.contains("ZHAHumidity")) { // ZHAHumidity
-            thingTypeUID = THING_TYPE_HUMIDITY_SENSOR;
+            thingTypeUID = THING_TYPE_GENERIC_SENSOR;
+            description = "Humidity Sensor";
         } else if (sensor.type.contains("ZHAPressure")) { // ZHAPressure
             thingTypeUID = THING_TYPE_PRESSURE_SENSOR;
         } else if (sensor.type.contains("ZHAOpenClose")) { // ZHAOpenClose
@@ -286,11 +290,13 @@ public class ThingDiscoveryService extends AbstractDiscoveryService implements D
         } else if (sensor.type.contains("ZHAWater")) { // ZHAWater
             thingTypeUID = THING_TYPE_WATERLEAKAGE_SENSOR;
         } else if (sensor.type.contains("ZHAFire")) {
-            thingTypeUID = THING_TYPE_FIRE_SENSOR; // ZHAFire
+            thingTypeUID = THING_TYPE_GENERIC_SENSOR; // ZHAFire
+            description = "Fire Sensor";
         } else if (sensor.type.contains("ZHAAlarm")) {
             thingTypeUID = THING_TYPE_ALARM_SENSOR; // ZHAAlarm
         } else if (sensor.type.contains("ZHAVibration")) {
-            thingTypeUID = THING_TYPE_VIBRATION_SENSOR; // ZHAVibration
+            thingTypeUID = THING_TYPE_GENERIC_SENSOR; // ZHAVibration
+            description = "Vibration Sensor";
         } else if (sensor.type.contains("ZHABattery")) {
             thingTypeUID = THING_TYPE_BATTERY_SENSOR; // ZHABattery
         } else if (sensor.type.contains("ZHAMoisture")) {
@@ -305,8 +311,8 @@ public class ThingDiscoveryService extends AbstractDiscoveryService implements D
         ThingUID uid = new ThingUID(thingTypeUID, bridgeUID, sensor.uniqueid.replaceAll("[^a-z0-9\\[\\]]", ""));
 
         DiscoveryResult discoveryResult = DiscoveryResultBuilder.create(uid).withBridge(bridgeUID)
-                .withLabel(sensor.name + " (" + sensor.manufacturername + ")").withProperties(properties)
-                .withRepresentationProperty(UNIQUE_ID).build();
+                .withLabel(sensor.name + " (" + sensor.manufacturername + ", " + description + ")")
+                .withProperties(properties).withRepresentationProperty(UNIQUE_ID).build();
         thingDiscovered(discoveryResult);
     }
 

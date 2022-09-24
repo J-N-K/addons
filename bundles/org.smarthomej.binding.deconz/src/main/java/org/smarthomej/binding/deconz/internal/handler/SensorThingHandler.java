@@ -59,12 +59,13 @@ import com.google.gson.Gson;
 public class SensorThingHandler extends SensorBaseThingHandler {
     public static final Set<ThingTypeUID> SUPPORTED_THING_TYPES = Set.of(THING_TYPE_PRESENCE_SENSOR,
             THING_TYPE_DAYLIGHT_SENSOR, THING_TYPE_POWER_SENSOR, THING_TYPE_CONSUMPTION_SENSOR, THING_TYPE_LIGHT_SENSOR,
-            THING_TYPE_TEMPERATURE_SENSOR, THING_TYPE_HUMIDITY_SENSOR, THING_TYPE_PRESSURE_SENSOR, THING_TYPE_SWITCH,
-            THING_TYPE_OPENCLOSE_SENSOR, THING_TYPE_WATERLEAKAGE_SENSOR, THING_TYPE_FIRE_SENSOR,
-            THING_TYPE_ALARM_SENSOR, THING_TYPE_VIBRATION_SENSOR, THING_TYPE_BATTERY_SENSOR,
-            THING_TYPE_CARBONMONOXIDE_SENSOR, THING_TYPE_AIRQUALITY_SENSOR, THING_TYPE_COLOR_CONTROL,
-            THING_TYPE_MOISTURE_SENSOR);
+            THING_TYPE_PRESSURE_SENSOR, THING_TYPE_SWITCH, THING_TYPE_OPENCLOSE_SENSOR, THING_TYPE_WATERLEAKAGE_SENSOR,
+            THING_TYPE_ALARM_SENSOR, THING_TYPE_BATTERY_SENSOR, THING_TYPE_CARBONMONOXIDE_SENSOR,
+            THING_TYPE_AIRQUALITY_SENSOR, THING_TYPE_COLOR_CONTROL, THING_TYPE_MOISTURE_SENSOR);
 
+    public static final Set<ThingTypeUID> DEPRECATED_THING_TYPES = Set.of(THING_TYPE_FIRE_SENSOR,
+            THING_TYPE_HUMIDITY_SENSOR, THING_TYPE_TEMPERATURE_SENSOR, THING_TYPE_LIGHT_SENSOR,
+            THING_TYPE_VIBRATION_SENSOR);
     private static final List<String> CONFIG_CHANNELS = List.of(CHANNEL_BATTERY_LEVEL, CHANNEL_BATTERY_LOW,
             CHANNEL_ENABLED, CHANNEL_TEMPERATURE);
 
@@ -73,9 +74,18 @@ public class SensorThingHandler extends SensorBaseThingHandler {
     }
 
     @Override
+    public void initialize() {
+        if (DEPRECATED_THING_TYPES.contains(thing.getThingTypeUID())) {
+            changeThingType(THING_TYPE_GENERIC_SENSOR, getConfig());
+        } else {
+            super.initialize();
+        }
+    }
+
+    @Override
     public void handleCommand(ChannelUID channelUID, Command command) {
         if (command instanceof RefreshType) {
-            sensorState.buttonevent = null;
+            sensorState.remove("buttonevent");
             valueUpdated(channelUID, sensorState, false);
             return;
         }
@@ -111,12 +121,12 @@ public class SensorThingHandler extends SensorBaseThingHandler {
         super.valueUpdated(channelUID, newState, initializing);
         switch (channelUID.getId()) {
             case CHANNEL_BATTERY_LEVEL:
-                updateDecimalTypeChannel(channelUID, newState.battery);
+                updateDecimalTypeChannel(channelUID, newState.get("battery"));
                 break;
             case CHANNEL_LIGHT:
-                Boolean dark = newState.dark;
+                Boolean dark = (Boolean) newState.get("dark");
                 if (dark != null) {
-                    Boolean daylight = newState.daylight;
+                    Boolean daylight = (Boolean) newState.get("daylight");
                     if (dark) { // if it's dark, it's dark ;)
                         updateState(channelUID, new StringType("Dark"));
                     } else if (daylight != null) { // if its not dark, it might be between darkness and daylight
@@ -131,100 +141,100 @@ public class SensorThingHandler extends SensorBaseThingHandler {
                 }
                 break;
             case CHANNEL_POWER:
-                updateQuantityTypeChannel(channelUID, newState.power, WATT);
+                updateQuantityTypeChannel(channelUID, newState.get("power"), WATT);
                 break;
             case CHANNEL_CONSUMPTION:
-                updateQuantityTypeChannel(channelUID, newState.consumption, WATT_HOUR);
+                updateQuantityTypeChannel(channelUID, newState.get("consumption"), WATT_HOUR);
                 break;
             case CHANNEL_VOLTAGE:
-                updateQuantityTypeChannel(channelUID, newState.voltage, VOLT);
+                updateQuantityTypeChannel(channelUID, newState.get("voltage"), VOLT);
                 break;
             case CHANNEL_CURRENT:
-                updateQuantityTypeChannel(channelUID, newState.current, MILLI(AMPERE));
+                updateQuantityTypeChannel(channelUID, newState.get("current"), MILLI(AMPERE));
                 break;
             case CHANNEL_LIGHT_LUX:
-                updateQuantityTypeChannel(channelUID, newState.lux, LUX);
+                updateQuantityTypeChannel(channelUID, newState.get("lux"), LUX);
                 break;
             case CHANNEL_COLOR:
-                final double @Nullable [] xy = newState.xy;
+                final int @Nullable [] xy = (int[]) newState.get("xy");
                 if (xy != null && xy.length == 2) {
                     updateState(channelUID, HSBType.fromXY((float) xy[0], (float) xy[1]));
                 }
                 break;
             case CHANNEL_LIGHT_LEVEL:
-                updateDecimalTypeChannel(channelUID, newState.lightlevel);
+                updateDecimalTypeChannel(channelUID, newState.get("lightlevel"));
                 break;
             case CHANNEL_DARK:
-                updateSwitchChannel(channelUID, newState.dark);
+                updateSwitchChannel(channelUID, newState.get("dark"));
                 break;
             case CHANNEL_DAYLIGHT:
-                updateSwitchChannel(channelUID, newState.daylight);
+                updateSwitchChannel(channelUID, newState.get("daylight"));
                 break;
             case CHANNEL_TEMPERATURE:
-                updateQuantityTypeChannel(channelUID, newState.temperature, CELSIUS, 1.0 / 100);
+                updateQuantityTypeChannel(channelUID, newState.get("temperature"), CELSIUS, 1.0 / 100);
                 break;
             case CHANNEL_HUMIDITY:
-                updateQuantityTypeChannel(channelUID, newState.humidity, PERCENT, 1.0 / 100);
+                updateQuantityTypeChannel(channelUID, newState.get("humidity"), PERCENT, 1.0 / 100);
                 break;
             case CHANNEL_PRESSURE:
-                updateQuantityTypeChannel(channelUID, newState.pressure, HECTO(PASCAL));
+                updateQuantityTypeChannel(channelUID, newState.get("pressure"), HECTO(PASCAL));
                 break;
             case CHANNEL_PRESENCE:
-                updateSwitchChannel(channelUID, newState.presence);
+                updateSwitchChannel(channelUID, newState.get("presence"));
                 break;
             case CHANNEL_VALUE:
-                updateDecimalTypeChannel(channelUID, newState.status);
+                updateDecimalTypeChannel(channelUID, newState.get("status"));
                 break;
             case CHANNEL_OPENCLOSE:
-                Boolean open = newState.open;
+                Boolean open = (Boolean) newState.get("open");
                 if (open != null) {
                     updateState(channelUID, open ? OpenClosedType.OPEN : OpenClosedType.CLOSED);
                 }
                 break;
             case CHANNEL_WATERLEAKAGE:
-                updateSwitchChannel(channelUID, newState.water);
+                updateSwitchChannel(channelUID, newState.get("water"));
                 break;
             case CHANNEL_FIRE:
-                updateSwitchChannel(channelUID, newState.fire);
+                updateSwitchChannel(channelUID, newState.get("fire"));
                 break;
             case CHANNEL_ALARM:
-                updateSwitchChannel(channelUID, newState.alarm);
+                updateSwitchChannel(channelUID, newState.get("alarm"));
                 break;
             case CHANNEL_TAMPERED:
-                updateSwitchChannel(channelUID, newState.tampered);
+                updateSwitchChannel(channelUID, newState.get("tampered"));
                 break;
             case CHANNEL_VIBRATION:
-                updateSwitchChannel(channelUID, newState.vibration);
+                updateSwitchChannel(channelUID, newState.get("vibration"));
                 break;
             case CHANNEL_CARBONMONOXIDE:
-                updateSwitchChannel(channelUID, newState.carbonmonoxide);
+                updateSwitchChannel(channelUID, newState.get("carbonmonoxide"));
                 break;
             case CHANNEL_AIRQUALITY:
-                String airquality = newState.airquality;
+                String airquality = (String) newState.get("airquality");
                 if (airquality != null) {
                     updateState(channelUID, new StringType(airquality));
                 }
                 break;
             case CHANNEL_AIRQUALITYPPB:
-                updateQuantityTypeChannel(channelUID, newState.airqualityppb, PARTS_PER_BILLION);
+                updateQuantityTypeChannel(channelUID, newState.get("airqualityppb"), PARTS_PER_BILLION);
                 break;
             case CHANNEL_MOISTURE:
-                updateQuantityTypeChannel(channelUID, newState.moisture, PERCENT);
+                updateQuantityTypeChannel(channelUID, newState.get("moisture"), PERCENT);
                 break;
             case CHANNEL_BUTTON:
-                updateDecimalTypeChannel(channelUID, newState.buttonevent);
+                updateDecimalTypeChannel(channelUID, newState.get("buttonevent"));
                 break;
             case CHANNEL_BUTTONEVENT:
-                Integer buttonevent = newState.buttonevent;
+                Integer buttonevent = (Integer) newState.get("buttonevent");
                 if (buttonevent != null && !initializing) {
                     triggerChannel(channelUID, String.valueOf(buttonevent));
                 }
                 break;
             case CHANNEL_GESTURE:
-                updateDecimalTypeChannel(channelUID, newState.gesture);
+                updateDecimalTypeChannel(channelUID, newState.get("gesture"));
                 break;
             case CHANNEL_GESTUREEVENT:
-                Integer gesture = newState.gesture;
+                Integer gesture = (Integer) newState.get("gesture");
                 if (gesture != null && !initializing) {
                     triggerChannel(channelUID, String.valueOf(gesture));
                 }
@@ -243,34 +253,35 @@ public class SensorThingHandler extends SensorBaseThingHandler {
         }
 
         // ZHAPresence - e.g. IKEA TRÅDFRI motion sensor
-        if (sensorState.dark != null && createChannel(thingBuilder, CHANNEL_DARK, ChannelKind.STATE)) {
+        if (sensorState.containsKey("dark") && createChannel(thingBuilder, CHANNEL_DARK, ChannelKind.STATE)) {
             thingEdited = true;
         }
 
         // ZHAConsumption - e.g Bitron 902010/25 or Heiman SmartPlug
-        if (sensorState.power != null && createChannel(thingBuilder, CHANNEL_POWER, ChannelKind.STATE)) {
+        if (sensorState.containsKey("power") && createChannel(thingBuilder, CHANNEL_POWER, ChannelKind.STATE)) {
             thingEdited = true;
         }
         // ZHAConsumption - e.g. Linky devices second channel
-        if (sensorState.consumption2 != null && createChannel(thingBuilder, CHANNEL_CONSUMPTION_2, ChannelKind.STATE)) {
+        if (sensorState.containsKey("consumption2")
+                && createChannel(thingBuilder, CHANNEL_CONSUMPTION_2, ChannelKind.STATE)) {
             thingEdited = true;
         }
 
         // ZHAPower - e.g. Heiman SmartPlug
-        if (sensorState.voltage != null && createChannel(thingBuilder, CHANNEL_VOLTAGE, ChannelKind.STATE)) {
+        if (sensorState.containsKey("voltage") && createChannel(thingBuilder, CHANNEL_VOLTAGE, ChannelKind.STATE)) {
             thingEdited = true;
         }
-        if (sensorState.current != null && createChannel(thingBuilder, CHANNEL_CURRENT, ChannelKind.STATE)) {
+        if (sensorState.containsKey("current") && createChannel(thingBuilder, CHANNEL_CURRENT, ChannelKind.STATE)) {
             thingEdited = true;
         }
 
         // IAS Zone sensor - e.g. Heiman HS1MS motion sensor
-        if (sensorState.tampered != null && createChannel(thingBuilder, CHANNEL_TAMPERED, ChannelKind.STATE)) {
+        if (sensorState.containsKey("tampered") && createChannel(thingBuilder, CHANNEL_TAMPERED, ChannelKind.STATE)) {
             thingEdited = true;
         }
 
         // e.g. Aqara Cube
-        if (sensorState.gesture != null && (createChannel(thingBuilder, CHANNEL_GESTURE, ChannelKind.STATE)
+        if (sensorState.containsKey("gesture") && (createChannel(thingBuilder, CHANNEL_GESTURE, ChannelKind.STATE)
                 || createChannel(thingBuilder, CHANNEL_GESTUREEVENT, ChannelKind.TRIGGER))) {
             thingEdited = true;
         }

@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -37,13 +36,11 @@ import org.openhab.core.thing.binding.ThingHandlerCallback;
 import org.openhab.core.thing.binding.builder.ChannelBuilder;
 import org.openhab.core.thing.binding.builder.ThingBuilder;
 import org.smarthomej.binding.deconz.internal.DeconzDynamicCommandDescriptionProvider;
+import org.smarthomej.binding.deconz.internal.Util;
 import org.smarthomej.binding.deconz.internal.dto.GroupMessage;
 import org.smarthomej.binding.deconz.internal.handler.GroupThingHandler;
-import org.smarthomej.binding.deconz.internal.types.GroupType;
-import org.smarthomej.binding.deconz.internal.types.GroupTypeDeserializer;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 /**
  * This class provides tests for deconz light groups
@@ -53,17 +50,10 @@ import com.google.gson.GsonBuilder;
 @ExtendWith(MockitoExtension.class)
 @NonNullByDefault
 public class LightGroupTest {
-    private @NonNullByDefault({}) Gson gson;
+    private final Gson gson = Util.createCustomizedGson();
 
     private @Mock @NonNullByDefault({}) ThingHandlerCallback thingHandlerCallback;
     private @Mock @NonNullByDefault({}) DeconzDynamicCommandDescriptionProvider commandDescriptionProvider;
-
-    @BeforeEach
-    public void initialize() {
-        GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.registerTypeAdapter(GroupType.class, new GroupTypeDeserializer());
-        gson = gsonBuilder.create();
-    }
 
     @Test
     public void lightGroupUpdateTest() throws IOException {

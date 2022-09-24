@@ -13,10 +13,17 @@
  */
 package org.smarthomej.binding.deconz;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.aMapWithSize;
+import static org.hamcrest.Matchers.emptyOrNullString;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
+import static org.smarthomej.binding.deconz.internal.BindingConstants.SENSOR_CHANNEL_MAP;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,21 +47,15 @@ import org.openhab.core.config.discovery.DiscoveryListener;
 import org.openhab.core.library.types.DateTimeType;
 import org.openhab.core.thing.Bridge;
 import org.openhab.core.thing.ThingUID;
+import org.openhab.core.thing.type.ChannelTypeUID;
+import org.smarthomej.binding.deconz.internal.ChannelUpdater;
 import org.smarthomej.binding.deconz.internal.Util;
 import org.smarthomej.binding.deconz.internal.discovery.ThingDiscoveryService;
 import org.smarthomej.binding.deconz.internal.dto.BridgeFullState;
 import org.smarthomej.binding.deconz.internal.handler.DeconzBridgeHandler;
-import org.smarthomej.binding.deconz.internal.types.GroupType;
-import org.smarthomej.binding.deconz.internal.types.GroupTypeDeserializer;
-import org.smarthomej.binding.deconz.internal.types.LightType;
-import org.smarthomej.binding.deconz.internal.types.LightTypeDeserializer;
-import org.smarthomej.binding.deconz.internal.types.ResourceType;
-import org.smarthomej.binding.deconz.internal.types.ResourceTypeDeserializer;
-import org.smarthomej.binding.deconz.internal.types.ThermostatMode;
-import org.smarthomej.binding.deconz.internal.types.ThermostatModeGsonTypeAdapter;
+import org.smarthomej.binding.deconz.internal.types.ChannelInfo;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 /**
  * This class provides tests for deconz binding
@@ -62,10 +63,10 @@ import com.google.gson.GsonBuilder;
  * @author Jan N. Klug - Initial contribution
  */
 @ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.WARN)
+@MockitoSettings(strictness = Strictness.LENIENT)
 @NonNullByDefault
 public class DeconzTest {
-    private @NonNullByDefault({}) Gson gson;
+    private final Gson gson = Util.createCustomizedGson();
 
     private @Mock @NonNullByDefault({}) DiscoveryListener discoveryListener;
     private @Mock @NonNullByDefault({}) DeconzBridgeHandler bridgeHandler;
@@ -75,13 +76,6 @@ public class DeconzTest {
     public void initialize() {
         Mockito.doAnswer(answer -> bridge).when(bridgeHandler).getThing();
         Mockito.doAnswer(answer -> new ThingUID("deconz", "mybridge")).when(bridge).getUID();
-
-        GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.registerTypeAdapter(LightType.class, new LightTypeDeserializer());
-        gsonBuilder.registerTypeAdapter(GroupType.class, new GroupTypeDeserializer());
-        gsonBuilder.registerTypeAdapter(ResourceType.class, new ResourceTypeDeserializer());
-        gsonBuilder.registerTypeAdapter(ThermostatMode.class, new ThermostatModeGsonTypeAdapter());
-        gson = gsonBuilder.create();
     }
 
     @Test
@@ -122,5 +116,18 @@ public class DeconzTest {
         dateTime = Util.convertTimestampToDateTime("2020-08-22T11:09:47");
         assertEquals(new DateTimeType(ZonedDateTime.parse("2020-08-22T11:09:47Z")).toZone(ZoneId.systemDefault()),
                 dateTime);
+    }
+
+    @Test
+    public void channelInfoProperlyReadAndValid() {
+        assertThat(SENSOR_CHANNEL_MAP, is(aMapWithSize(11)));
+
+        for (ChannelInfo channelInfo : SENSOR_CHANNEL_MAP.values()) {
+            assertThat(channelInfo.channelTypeUID, is(not(emptyOrNullString())));
+            ChannelTypeUID channelTypeUID = new ChannelTypeUID(channelInfo.channelTypeUID);
+            assertThat(channelTypeUID, is(notNullValue()));
+            assertThat(ChannelUpdater.get(channelInfo.converter), is(not(Optional.empty())));
+            assertThat(channelInfo.converterParams, is(notNullValue()));
+        }
     }
 }

@@ -186,16 +186,41 @@ public abstract class DeconzBaseThingHandler extends UpdatingBaseThingHandler im
      *
      * @param thingBuilder a ThingBuilder instance for this thing
      * @param channelId the channel id
+     * @param channelTypeUID the {@link ChannelTypeUID} of the channel
      * @param kind the channel kind (STATE or TRIGGER)
      * @return true if the thing was modified
      */
-    protected boolean createChannel(ThingBuilder thingBuilder, String channelId, ChannelKind kind) {
+    protected boolean createChannel(ThingBuilder thingBuilder, String channelId, ChannelTypeUID channelTypeUID,
+            ChannelKind kind) {
         if (thing.getChannel(channelId) != null) {
             // channel already exists, no update necessary
             return false;
         }
 
         ChannelUID channelUID = new ChannelUID(thing.getUID(), channelId);
+
+        ThingHandlerCallback callback = getCallback();
+        if (callback != null) {
+            Channel channel = callback.createChannelBuilder(channelUID, channelTypeUID).withKind(kind).build();
+            thingBuilder.withChannel(channel);
+            logger.trace("Added '{}' to thing '{}'", channelId, thing.getUID());
+
+            return true;
+        }
+
+        logger.warn("Could not create channel '{}' for thing '{}'", channelUID, thing.getUID());
+        return false;
+    }
+
+    /**
+     * create a channel on the current thing
+     *
+     * @param thingBuilder a ThingBuilder instance for this thing
+     * @param channelId the channel id
+     * @param kind the channel kind (STATE or TRIGGER)
+     * @return true if the thing was modified
+     */
+    protected boolean createChannel(ThingBuilder thingBuilder, String channelId, ChannelKind kind) {
         ChannelTypeUID channelTypeUID;
         switch (channelId) {
             case CHANNEL_BATTERY_LEVEL:
@@ -211,18 +236,7 @@ public abstract class DeconzBaseThingHandler extends UpdatingBaseThingHandler im
                 channelTypeUID = new ChannelTypeUID(BINDING_ID, channelId);
                 break;
         }
-
-        ThingHandlerCallback callback = getCallback();
-        if (callback != null) {
-            Channel channel = callback.createChannelBuilder(channelUID, channelTypeUID).withKind(kind).build();
-            thingBuilder.withChannel(channel);
-            logger.trace("Added '{}' to thing '{}'", channelId, thing.getUID());
-
-            return true;
-        }
-
-        logger.warn("Could not create channel '{}' for thing '{}'", channelUID, thing.getUID());
-        return false;
+        return createChannel(thingBuilder, channelId, channelTypeUID, kind);
     }
 
     /**

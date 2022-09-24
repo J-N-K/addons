@@ -24,7 +24,6 @@ import java.util.Map;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -41,15 +40,11 @@ import org.openhab.core.thing.binding.builder.ChannelBuilder;
 import org.openhab.core.thing.binding.builder.ThingBuilder;
 import org.smarthomej.binding.deconz.internal.DeconzDynamicCommandDescriptionProvider;
 import org.smarthomej.binding.deconz.internal.DeconzDynamicStateDescriptionProvider;
+import org.smarthomej.binding.deconz.internal.Util;
 import org.smarthomej.binding.deconz.internal.dto.LightMessage;
 import org.smarthomej.binding.deconz.internal.handler.LightThingHandler;
-import org.smarthomej.binding.deconz.internal.types.LightType;
-import org.smarthomej.binding.deconz.internal.types.LightTypeDeserializer;
-import org.smarthomej.binding.deconz.internal.types.ThermostatMode;
-import org.smarthomej.binding.deconz.internal.types.ThermostatModeGsonTypeAdapter;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 
 /**
  * This class provides tests for deconz lights
@@ -59,19 +54,11 @@ import com.google.gson.GsonBuilder;
 @ExtendWith(MockitoExtension.class)
 @NonNullByDefault
 public class LightsTest {
-    private @NonNullByDefault({}) Gson gson;
+    private final Gson gson = Util.createCustomizedGson();
 
     private @Mock @NonNullByDefault({}) ThingHandlerCallback thingHandlerCallback;
     private @Mock @NonNullByDefault({}) DeconzDynamicStateDescriptionProvider stateDescriptionProvider;
     private @Mock @NonNullByDefault({}) DeconzDynamicCommandDescriptionProvider commandDescriptionProvider;
-
-    @BeforeEach
-    public void initialize() {
-        GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.registerTypeAdapter(LightType.class, new LightTypeDeserializer());
-        gsonBuilder.registerTypeAdapter(ThermostatMode.class, new ThermostatModeGsonTypeAdapter());
-        gson = gsonBuilder.create();
-    }
 
     @Test
     public void colorTemperatureLightUpdateTest() throws IOException {
