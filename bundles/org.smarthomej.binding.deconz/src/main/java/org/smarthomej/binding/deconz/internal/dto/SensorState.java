@@ -19,13 +19,10 @@ import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 
 /**
- * The {@link SensorState} is send by the websocket connection as well as the Rest API.
+ * The {@link SensorState} is sent by the websocket connection as well as the Rest API.
  * It is part of a {@link SensorMessage}.
  *
- * This should be in sync with the supported sensors from
- * https://github.com/dresden-elektronik/deconz-rest-plugin/wiki/Supported-Devices.
- *
- * @author David Graeff - Initial contribution
+ * @author Jan N. Klug - Initial contribution
  */
 @NonNullByDefault
 public class SensorState extends HashMap<String, @Nullable Object> {

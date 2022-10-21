@@ -78,7 +78,8 @@ public class GenericSensorThingHandler extends DeconzBaseThingHandler {
     public void handleCommand(ChannelUID channelUID, Command command) {
         if (command instanceof RefreshType) {
             sensorState.remove("buttonevent");
-            // valueUpdated(channelUID, sensorState, false);
+            // TODO: handle refresh
+            //valueUpdated(channelUID, sensorState, false);
             return;
         }
         if (CHANNEL_ENABLED.equals(channelUID.getId())) {
@@ -222,7 +223,14 @@ public class GenericSensorThingHandler extends DeconzBaseThingHandler {
     private void valueUpdated(String key, @Nullable Object value, boolean initializing) {
         ChannelInfo channelInfo = SENSOR_CHANNEL_MAP.get(key);
         if (value != null && channelInfo != null) {
-            ChannelUpdater.get(channelInfo.converter).ifPresent(c -> c.update(channelInfo, value, this::updateState));
+            if ("TriggerChannelConverter".equals(channelInfo.converter)) {
+                if (!initializing) {
+                    // trigger only if we are not initializing the thing
+                    triggerChannel(channelInfo.channelId, value.toString());
+                }
+            } else {
+                ChannelUpdater.get(channelInfo.converter).ifPresent(c -> c.update(channelInfo, value, this::updateState));
+            }
         }
     }
 
@@ -245,9 +253,12 @@ public class GenericSensorThingHandler extends DeconzBaseThingHandler {
             }
         }
 
-        // e.g. Aqara Cube
         if (sensorState.containsKey("gesture") && (createChannel(thingBuilder, CHANNEL_GESTURE, ChannelKind.STATE)
                 || createChannel(thingBuilder, CHANNEL_GESTUREEVENT, ChannelKind.TRIGGER))) {
+            thingEdited = true;
+        }
+
+        if (sensorState.containsKey("button") && (createChannel(thingBuilder, CHANNEL_BUTTONEVENT, ChannelKind.TRIGGER))) {
             thingEdited = true;
         }
 

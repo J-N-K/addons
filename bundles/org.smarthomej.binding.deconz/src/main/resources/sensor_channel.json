@@ -1,4 +1,43 @@
 {
+  "airquality": {
+    "channelId": "airquality",
+    "channelTypeUID": "deconz:airquality",
+    "converter": "StringType"
+  },
+  "airqualityppb": {
+    "channelId": "airqualityppb",
+    "channelTypeUID": "deconz:airqualityppb",
+    "converter": "QuantityType",
+    "converterParams": {
+      "unit": "ppb"
+    }
+  },
+  "button": {
+    "channelId": "button",
+    "channelTypeUID": "deconz:button",
+    "converter": "DecimalType"
+  },
+  "buttonevent": {
+    "channelId": "buttonevent",
+    "channelTypeUID": "deconz:buttonevent",
+    "converter": "TriggerChannel"
+  },
+  "consumption": {
+    "channelId": "consumption",
+    "channelTypeUID": "deconz:consumption",
+    "converter": "QuantityType",
+    "converterParams": {
+      "unit": "Wh"
+    }
+  },
+  "current": {
+    "channelId": "current",
+    "channelTypeUID": "deconz:current",
+    "converter": "QuantityType",
+    "converterParams": {
+      "unit": "mA"
+    }
+  },
   "dark": {
     "channelId": "dark",
     "channelTypeUID": "deconz:dark",
@@ -7,6 +46,11 @@
   "daylight": {
     "channelId": "daylight",
     "channelTypeUID": "deconz:daylight",
+    "converter": "OnOffType"
+  },
+  "enabled": {
+    "channelId": "enabled",
+    "channelTypeUID": "system.power",
     "converter": "OnOffType"
   },
   "fire": {
@@ -42,6 +86,27 @@
       "unit": "lx"
     }
   },
+  "moisture": {
+    "channelId": "moisture",
+    "channelTypeUID": "deconz:moisture",
+    "converter": "QuantityType",
+    "converterParams": {
+      "unit": "%"
+    }
+  },
+  "power": {
+    "channelId": "power",
+    "channelTypeUID": "power",
+    "converter": "QuantityType",
+    "converterParams": {
+      "unit": "W"
+    }
+  },
+  "presence": {
+    "channelId": "presence",
+    "channelTypeUID": "system.motion",
+    "converter": "OnOffType"
+  },
   "temperature": {
     "channelId": "temperature",
     "channelTypeUID": "deconz:temperature",
@@ -68,5 +133,18 @@
     "channelId": "vibrationstrength",
     "channelTypeUID": "deconz:vibrationstrength",
     "converter": "DecimalType"
+  },
+  "voltage": {
+    "channelId": "voltage",
+    "channelTypeUID": "deconz:voltage",
+    "converter": "QuantityType",
+    "converterParams": {
+      "unit": "V"
+    }
+  },
+  "waterleakage": {
+    "channelId": "waterleakage",
+    "channelTypeUID": "deconz:waterleakage",
+    "converter": "OnOffType"
   }
 }
