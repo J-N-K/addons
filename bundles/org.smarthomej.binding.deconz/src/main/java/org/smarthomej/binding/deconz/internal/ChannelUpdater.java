@@ -20,6 +20,7 @@ import java.util.function.BiConsumer;
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.library.types.OnOffType;
+import org.openhab.core.library.types.OpenClosedType;
 import org.openhab.core.library.types.QuantityType;
 import org.openhab.core.library.types.StringType;
 import org.openhab.core.types.State;
@@ -41,6 +42,7 @@ public class ChannelUpdater {
             Map.entry("DateTimeType", ChannelUpdater::defaultDateTimeTypeConverter),
             Map.entry("DecimalType", ChannelUpdater::defaultDecimalTypeConverter),
             Map.entry("OnOffType", ChannelUpdater::defaultOnOffTypeConverter),
+            Map.entry("OpenClosedType", ChannelUpdater::defaultOpenClosedTypeConverter),
             Map.entry("QuantityType", ChannelUpdater::defaultQuantityTypeConverter),
             Map.entry("StringType", ChannelUpdater::defaultStringTypeConverter));
 
@@ -71,6 +73,13 @@ public class ChannelUpdater {
             BiConsumer<String, State> update) {
         if (value instanceof Boolean) {
             update.accept(channelInfo.channelId, OnOffType.from((Boolean) value));
+        }
+    }
+
+    private static void defaultOpenClosedTypeConverter(ChannelInfo channelInfo, Object value,
+            BiConsumer<String, State> update) {
+        if (value instanceof Boolean) {
+            update.accept(channelInfo.channelId, (Boolean) value ? OpenClosedType.OPEN : OpenClosedType.CLOSED);
         }
     }
 

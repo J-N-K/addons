@@ -22,6 +22,11 @@
     "channelTypeUID": "deconz:buttonevent",
     "converter": "TriggerChannel"
   },
+  "carbonmonoxide": {
+    "channelId": "carbonmonoxide",
+    "channelTypeUID": "deconz:carbonmonoxide",
+    "converter": "OnOffType"
+  },
   "consumption": {
     "channelId": "consumption",
     "channelTypeUID": "deconz:consumption",
@@ -94,6 +99,11 @@
       "unit": "%"
     }
   },
+  "open": {
+    "channelId": "open",
+    "channelTypeUID": "open",
+    "converter": "OpenClosedType"
+  },
   "power": {
     "channelId": "power",
     "channelTypeUID": "power",
@@ -106,6 +116,14 @@
     "channelId": "presence",
     "channelTypeUID": "system.motion",
     "converter": "OnOffType"
+  },
+  "pressure": {
+    "channelId": "pressure",
+    "channelTypeUID": "pressure",
+    "converter": "QuantityType",
+    "converterParams": {
+      "unit": "hPa"
+    }
   },
   "temperature": {
     "channelId": "temperature",

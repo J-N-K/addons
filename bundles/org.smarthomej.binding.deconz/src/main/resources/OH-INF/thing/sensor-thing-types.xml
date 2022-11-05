@@ -188,6 +188,69 @@
         <config-description-ref uri="thing-type:deconz:sensor"/>
     </thing-type>
 
+    <thing-type id="pressuresensor" listed="false">
+        <supported-bridge-type-refs>
+            <bridge-type-ref id="deconz"/>
+        </supported-bridge-type-refs>
+        <label>Pressure Sensor</label>
+        <description>A pressure senor</description>
+        <channels>
+            <channel typeId="pressure" id="pressure"></channel>
+            <channel typeId="last_updated" id="last_updated"></channel>
+        </channels>
+
+        <representation-property>uid</representation-property>
+
+        <config-description-ref uri="thing-type:deconz:sensor"/>
+    </thing-type>
+
+    <thing-type id="carbonmonoxidesensor" listed="false">
+        <supported-bridge-type-refs>
+            <bridge-type-ref id="deconz"/>
+        </supported-bridge-type-refs>
+        <label>Carbon-monoxide Sensor</label>
+        <channels>
+            <channel typeId="carbonmonoxide" id="carbonmonoxide"/>
+            <channel typeId="last_updated" id="last_updated"/>
+        </channels>
+
+        <representation-property>uid</representation-property>
+
+        <config-description-ref uri="thing-type:deconz:sensor"/>
+    </thing-type>
+
+    <thing-type id="firesensor" listed="false">
+        <supported-bridge-type-refs>
+            <bridge-type-ref id="deconz"/>
+        </supported-bridge-type-refs>
+        <label>Fire Sensor</label>
+        <description>A fire sensor</description>
+        <channels>
+            <channel typeId="fire" id="fire"/>
+            <channel typeId="last_updated" id="last_updated"/>
+        </channels>
+
+        <representation-property>uid</representation-property>
+
+        <config-description-ref uri="thing-type:deconz:sensor"/>
+    </thing-type>
+
+    <thing-type id="openclosesensor" listed="false">
+        <supported-bridge-type-refs>
+            <bridge-type-ref id="deconz"/>
+        </supported-bridge-type-refs>
+        <label>Open/Close Sensor</label>
+        <description>A open/close sensor</description>
+        <channels>
+            <channel typeId="open" id="open"/>
+            <channel typeId="last_updated" id="last_updated"/>
+        </channels>
+
+        <representation-property>uid</representation-property>
+
+        <config-description-ref uri="thing-type:deconz:sensor"/>
+    </thing-type>
+
     <thing-type id="colorcontrol">
         <supported-bridge-type-refs>
             <bridge-type-ref id="deconz"/>
@@ -251,38 +314,6 @@
         <state readOnly="true"/>
     </channel-type>
 
-    <channel-type id="temperature">
-        <item-type>Number:Temperature</item-type>
-        <label>Temperature</label>
-        <description>Current temperature</description>
-        <category>Temperature</category>
-        <state readOnly="true" pattern="%.2f %unit%"></state>
-    </channel-type>
-
-    <thing-type id="pressuresensor">
-        <supported-bridge-type-refs>
-            <bridge-type-ref id="deconz"/>
-        </supported-bridge-type-refs>
-        <label>Pressure Sensor</label>
-        <description>A pressure senor</description>
-        <channels>
-            <channel typeId="pressure" id="pressure"></channel>
-            <channel typeId="last_updated" id="last_updated"></channel>
-        </channels>
-
-        <representation-property>uid</representation-property>
-
-        <config-description-ref uri="thing-type:deconz:sensor"/>
-    </thing-type>
-
-    <channel-type id="pressure">
-        <item-type>Number:Pressure</item-type>
-        <label>Pressure</label>
-        <description>Current pressure</description>
-        <category>Pressure</category>
-        <state readOnly="true" pattern="%.1f %unit%"></state>
-    </channel-type>
-
     <thing-type id="daylightsensor">
         <supported-bridge-type-refs>
             <bridge-type-ref id="deconz"/>
@@ -318,45 +349,6 @@
             </options>
         </state>
     </channel-type>
-
-    <thing-type id="openclosesensor">
-        <supported-bridge-type-refs>
-            <bridge-type-ref id="deconz"/>
-        </supported-bridge-type-refs>
-        <label>Open/Close Sensor</label>
-        <description>A open/close sensor</description>
-        <channels>
-            <channel typeId="open" id="open"/>
-            <channel typeId="last_updated" id="last_updated"/>
-        </channels>
-
-        <representation-property>uid</representation-property>
-
-        <config-description-ref uri="thing-type:deconz:sensor"/>
-    </thing-type>
-
-    <channel-type id="open">
-        <item-type>Contact</item-type>
-        <label>Open/Close</label>
-        <description>Open/Close detected</description>
-        <state readOnly="true"></state>
-    </channel-type>
-
-    <thing-type id="firesensor">
-        <supported-bridge-type-refs>
-            <bridge-type-ref id="deconz"/>
-        </supported-bridge-type-refs>
-        <label>Fire Sensor</label>
-        <description>A fire sensor</description>
-        <channels>
-            <channel typeId="fire" id="fire"/>
-            <channel typeId="last_updated" id="last_updated"/>
-        </channels>
-
-        <representation-property>uid</representation-property>
-
-        <config-description-ref uri="thing-type:deconz:sensor"/>
-    </thing-type>
 
     <thing-type id="alarmsensor">
         <supported-bridge-type-refs>
@@ -404,21 +396,6 @@
         <properties>
             <property name="thingTypeVersion">1</property>
         </properties>
-
-        <representation-property>uid</representation-property>
-
-        <config-description-ref uri="thing-type:deconz:sensor"/>
-    </thing-type>
-
-    <thing-type id="carbonmonoxidesensor">
-        <supported-bridge-type-refs>
-            <bridge-type-ref id="deconz"/>
-        </supported-bridge-type-refs>
-        <label>Carbon-monoxide Sensor</label>
-        <channels>
-            <channel typeId="carbonmonoxide" id="carbonmonoxide"/>
-            <channel typeId="last_updated" id="last_updated"/>
-        </channels>
 
         <representation-property>uid</representation-property>
 
@@ -521,7 +498,6 @@
         <state pattern="%.1f %unit%" step="0.5" max="28" min="6"/>
     </channel-type>
 
-
     <channel-type id="humidity">
         <item-type>Number:Dimensionless</item-type>
         <label>Humidity</label>
@@ -595,6 +571,13 @@
         <state pattern="%.2f %unit%" step="0.01"></state>
     </channel-type>
 
+    <channel-type id="open">
+        <item-type>Contact</item-type>
+        <label>Open/Close</label>
+        <description>Open/Close detected</description>
+        <state readOnly="true"></state>
+    </channel-type>
+
     <channel-type id="power">
         <item-type>Number:Power</item-type>
         <label>Power</label>
@@ -603,11 +586,27 @@
         <state readOnly="true" pattern="%.1f %unit%"/>
     </channel-type>
 
+    <channel-type id="pressure">
+        <item-type>Number:Pressure</item-type>
+        <label>Pressure</label>
+        <description>Current pressure</description>
+        <category>Pressure</category>
+        <state readOnly="true" pattern="%.1f %unit%"></state>
+    </channel-type>
+
     <channel-type id="tampered">
         <item-type>Switch</item-type>
         <label>Tampered</label>
         <description>A zone is being tampered.</description>
         <state readOnly="true"/>
+    </channel-type>
+
+    <channel-type id="temperature">
+        <item-type>Number:Temperature</item-type>
+        <label>Temperature</label>
+        <description>Current temperature</description>
+        <category>Temperature</category>
+        <state readOnly="true" pattern="%.2f %unit%"></state>
     </channel-type>
 
     <channel-type id="tiltangle">
